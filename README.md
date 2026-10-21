@@ -9,7 +9,7 @@ Körs på hemmaservern i `~/veras-kokbok` och nås via Tailscale.
 - `veras-kokbok.service` – systemd-tjänst (mall, `ANVANDARE` byts vid installation)
 - `uppdatera.sh` – säkerhetskopierar databasen, hämtar senaste versionen och startar om
 - `CHANGELOG.md` – vad som ändrats i varje version
-- `data/` – databasen och säkerhetskopior. Skapas av servern och ligger **aldrig** i git.
+- `data/` – databasen (`kokbok.db`), bilderna (`images/`) och säkerhetskopior. Skapas av servern och ligger **aldrig** i git.
 
 ## Förhandsvisning
 Öppnas `static/index.html` utan servern körs appen i **förhandsvisningsläge**: en blå FÖRHANDSVISNING-markering visas och datan sparas bara i webbläsaren. Klicka på markeringen för att återställa.
@@ -44,6 +44,24 @@ tailscale serve status                                       # kokboken ska nu s
 
 Får du fel om certifikat: slå på **MagicDNS** och **HTTPS Certificates** under DNS i Tailscales adminkonsol.
 
+## Nå den direkt på hemnätet (utan Tailscale)
+Appen kan också lyssna på serverns vanliga nätverkskort, så att datorer hemma når den på `http://server.home:8443` utan Tailscale.
+
+```bash
+ip -4 -br addr                          # leta upp serverns LAN-adress, t.ex. 192.168.1.20 (inte 100.x = Tailscale)
+getent hosts server.home                # ska ge samma adress
+
+sudo mkdir -p /etc/systemd/system/veras-kokbok.service.d
+printf '[Service]\nEnvironment=KOKBOK_LAN=192.168.1.20:8443\n' | sudo tee /etc/systemd/system/veras-kokbok.service.d/lan.conf
+sudo systemctl daemon-reload && sudo systemctl restart veras-kokbok
+journalctl -u veras-kokbok -n 5 --no-pager   # ska visa "Lyssnar även på http://192.168.1.20:8443"
+```
+- Byt `192.168.1.20` mot din adress. Bind till LAN-adressen, inte `0.0.0.0`, annars krockar den med Tailscales 8443.
+- Det är `http://`, inte `https://`. HTTPS finns bara via Tailscale-adressen.
+- Ge servern en fast adress (DHCP-reservation i routern). Byter den adress försöker appen igen var 30:e sekund och skriver det i loggen.
+- Kör du `ufw`: `sudo ufw allow from 192.168.1.0/24 to any port 8443 proto tcp`.
+- Appen har ingen inloggning. Alla på hemnätet (även gäster på wifi) kan se och ändra recept.
+
 ## Uppdatera till en ny version
 ```bash
 cd ~/veras-kokbok && ./uppdatera.sh
@@ -56,8 +74,10 @@ git checkout v0.2.0 && sudo systemctl restart veras-kokbok    # tillbaka: git ch
 ```
 
 ## Manuell säkerhetskopia
+`uppdatera.sh` kopierar bara databasen. Bilderna ligger som vanliga filer i `data/images/` och ändras bara när någon lägger till eller tar bort en bild.
 ```bash
 python3 -c "import sqlite3; s=sqlite3.connect('$HOME/veras-kokbok/data/kokbok.db'); d=sqlite3.connect('$HOME/kokbok-kopia.db'); s.backup(d)"
+tar czf ~/kokbok-bilder-$(date +%F).tgz -C ~/veras-kokbok/data images
 ```
 
 ## Så funkar appen
@@ -65,3 +85,5 @@ python3 -c "import sqlite3; s=sqlite3.connect('$HOME/veras-kokbok/data/kokbok.db
 - **Redigera**: visar knappar på varje rad – lägg till i kategorin, byt namn/flytta, ta bort.
 - **Sök**: söker i alla nivåer, även på sökvägen ("huvud fisk"). Klick/Enter hoppar dit.
 - **Övrigt**: kan inte tas bort. Recept från borttagna kategorier flyttas hit.
+- **Receptsidan**: klicka på ett recept. Bild överst, ingredienser med mått och beskrivningen. Varje recept har en egen länk (`#recept-12`).
+- **Ingredienser**: en rad per ingrediens med mängd, enhet och ingrediens. Klistra in en hel lista i första fältet så delas den upp.

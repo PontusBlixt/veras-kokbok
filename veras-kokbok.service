@@ -1,6 +1,7 @@
 [Unit]
 Description=Veras Kokbok
-After=network.target
+Wants=network-online.target
+After=network-online.target
 
 [Service]
 Type=simple
@@ -9,6 +10,8 @@ User=ANVANDARE
 WorkingDirectory=/home/ANVANDARE/veras-kokbok
 Environment=KOKBOK_HOST=127.0.0.1
 Environment=KOKBOK_PORT=8090
+# Nå appen direkt på hemnätet (http://server.home:8443). Sätts i en override, se README.
+#Environment=KOKBOK_LAN=192.168.1.20:8443
 ExecStart=/usr/bin/python3 /home/ANVANDARE/veras-kokbok/server.py
 Restart=on-failure
 

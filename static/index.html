@@ -1,0 +1,892 @@
+<!doctype html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!--HEAD-->
+<title>Veras Kokbok</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="theme-color" content="#f3f5ef">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Figtree:wght@400;500;600&display=swap">
+<style>
+  /* Layout: en smal kolumn som ett receptkort - sticky rubrik, träd av kort, flytande +-knapp */
+  :root {
+    --bg: #f3f5ef;          /* kryddhylla i dagsljus */
+    --surface: #ffffff;
+    --surface-2: #eaefe6;
+    --text: #1d2621;
+    --muted: #64716a;
+    --line: #dbe3d7;
+    --accent: #2f6b4f;      /* basilika */
+    --accent-ink: #ffffff;
+    --accent-soft: #dcebe1;
+    --danger: #b3261e;
+    --hit: #fff1b3;
+    --env: #2563c9;
+    --env-ink: #ffffff;
+    --shadow: 0 1px 2px rgba(20, 40, 30, .06), 0 4px 14px rgba(20, 40, 30, .06);
+    --radius: 12px;
+    --font: "Figtree", "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
+    --display: "Bricolage Grotesque", "Figtree", "Segoe UI", system-ui, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #131915; --surface: #1b231e; --surface-2: #232d27; --text: #e5ece6; --muted: #98a69d;
+      --line: #2c3730; --accent: #7cc49a; --accent-ink: #0f1712; --accent-soft: #23392c; --danger: #f2867d;
+      --hit: #4f4714; --env: #6ea0ff; --env-ink: #0d1422;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 4px 14px rgba(0,0,0,.25);
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #131915; --surface: #1b231e; --surface-2: #232d27; --text: #e5ece6; --muted: #98a69d;
+    --line: #2c3730; --accent: #7cc49a; --accent-ink: #0f1712; --accent-soft: #23392c; --danger: #f2867d;
+    --hit: #4f4714; --env: #6ea0ff; --env-ink: #0d1422;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 4px 14px rgba(0,0,0,.25);
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font: 16px/1.45 var(--font);
+    -webkit-tap-highlight-color: transparent;
+  }
+  body::before {
+    content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px);
+    z-index: 10; background: var(--bg);
+  }
+  button, input, select, textarea { font: inherit; color: inherit; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .gutter { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  .wrap { max-width: 760px; margin: 0 auto; padding-block: 0 104px; }
+
+  header.top {
+    position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5;
+    background: var(--bg);
+    padding-block: 14px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .brand { display: flex; align-items: center; gap: 10px; max-width: 760px; margin: 0 auto; }
+  .brand h1 { font: 700 1.6rem/1.15 var(--display); margin: 0; letter-spacing: -.01em; }
+  .env { background: var(--env); color: var(--env-ink); font: 700 .7rem/1 var(--font); padding: 6px 10px; border-radius: 999px; letter-spacing: .08em; border: 0; cursor: default; }
+  button.env { cursor: pointer; }
+  body.test header.top { border-bottom: 3px solid var(--env); }
+  .tabs { display: flex; gap: 4px; max-width: 760px; margin: 6px auto 0; }
+  .tab {
+    border: 0; background: none; padding: 10px 4px; margin-right: 12px; cursor: pointer;
+    color: var(--muted); border-bottom: 2px solid transparent; font-weight: 500;
+  }
+  .tab[aria-selected="true"] { color: var(--text); border-bottom-color: var(--accent); }
+
+  .toolbar { display: flex; gap: 8px; margin: 16px 0 12px; align-items: center; }
+  .search { position: relative; flex: 1; }
+  .search input {
+    width: 100%; padding: 11px 36px 11px 38px;
+    border: 1px solid var(--line); border-radius: 999px;
+    background: var(--surface); outline: none;
+  }
+  .search input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+  .search svg { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: var(--muted); }
+  .search .clear {
+    position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
+    border: 0; background: none; color: var(--muted); cursor: pointer;
+    width: 30px; height: 30px; border-radius: 50%; display: none;
+  }
+  .search.has-text .clear { display: block; }
+  .btn {
+    border: 1px solid var(--line); background: var(--surface);
+    padding: 10px 14px; border-radius: 999px; cursor: pointer; white-space: nowrap;
+  }
+  .btn:hover { border-color: var(--muted); }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 600; }
+  .btn.danger { color: var(--danger); }
+  .btn.on { background: var(--accent-soft); border-color: var(--accent); }
+  .btn[disabled] { opacity: .5; cursor: default; }
+
+  .hint { color: var(--muted); font-size: .9rem; margin: 0 4px 10px; }
+
+  /* sökresultat */
+  .results { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; margin-bottom: 16px; }
+  .results button {
+    display: flex; width: 100%; text-align: left; gap: 10px; align-items: center;
+    padding: 11px 14px; border: 0; border-top: 1px solid var(--line); background: none; cursor: pointer;
+  }
+  .results button:first-child { border-top: 0; }
+  .results button:hover, .results button:focus-visible { background: var(--surface-2); outline: none; }
+  .results .path { color: var(--muted); font-size: .85rem; }
+  .results mark { background: var(--hit); color: inherit; border-radius: 3px; padding: 0 1px; }
+  .results .empty { padding: 14px; color: var(--muted); }
+
+  /* trädet */
+  .tree, .tree ul { list-style: none; margin: 0; padding: 0; }
+  .tree > li {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: var(--radius); margin-bottom: 8px; box-shadow: var(--shadow); overflow: hidden;
+  }
+  .tree ul { border-left: 2px solid var(--line); margin-left: 22px; }
+  .row {
+    display: flex; align-items: center; gap: 4px; min-height: 48px;
+    padding: 2px 6px 2px 4px; scroll-margin-top: 140px;
+  }
+  .row.flash { animation: flash 1.8s ease-out; }
+  @keyframes flash { 0%, 30% { background: var(--hit); } 100% { background: transparent; } }
+  .toggle {
+    flex: 1; display: flex; align-items: center; gap: 8px; min-width: 0;
+    border: 0; background: none; padding: 10px 6px; cursor: pointer; text-align: left;
+  }
+  .chev { width: 18px; flex: none; color: var(--muted); transition: transform .15s; }
+  li.open > .row .chev { transform: rotate(90deg); }
+  .chev.none { visibility: hidden; }
+  .name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .tree > li > .row .name { font-weight: 600; }
+  .count { color: var(--muted); font-size: .85rem; flex: none; }
+  .badge {
+    font-size: .72rem; padding: 2px 7px; border-radius: 999px;
+    background: var(--surface-2); color: var(--muted); flex: none;
+  }
+  .ico { flex: none; color: var(--accent); }
+  .recipe .toggle .name { font-weight: 400; }
+  li:not(.open) > ul { display: none; }
+  .row .acts { display: none; gap: 2px; flex: none; }
+  body.editing .row .acts { display: flex; }
+  .icon-btn {
+    border: 0; background: none; cursor: pointer; width: 38px; height: 38px;
+    border-radius: 10px; color: var(--muted); display: grid; place-items: center;
+  }
+  .icon-btn:hover { background: var(--surface-2); color: var(--text); }
+  .icon-btn.del:hover { color: var(--danger); }
+  @media (max-width: 520px) { body.editing .count { display: none; } }
+  .empty-cat { color: var(--muted); font-size: .9rem; padding: 6px 12px 12px 34px; }
+
+  /* flytande plus */
+  .fab {
+    position: fixed; right: max(calc(18px + env(safe-area-inset-right, 0px)), calc(50% - 380px + 18px)); bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+    width: 58px; height: 58px; border-radius: 50%; border: 0; cursor: pointer;
+    background: var(--accent); color: var(--accent-ink); box-shadow: var(--shadow);
+    display: grid; place-items: center;
+  }
+
+  /* dialoger */
+  dialog {
+    border: 0; padding: 0; border-radius: 16px; width: min(560px, calc(100vw - 24px));
+    background: var(--surface); color: var(--text); box-shadow: 0 20px 60px rgba(0,0,0,.35);
+    max-height: calc(100dvh - 32px);
+  }
+  dialog::backdrop { background: rgba(10, 20, 15, .5); }
+  .dlg { display: flex; flex-direction: column; max-height: calc(100dvh - 32px); }
+  .dlg header { padding: 18px 20px 6px; display: flex; align-items: center; gap: 8px; }
+  .dlg header h2 { font: 700 1.3rem/1.25 var(--display); text-wrap: balance; margin: 0; flex: 1; }
+  .dlg .body { padding: 8px 20px 4px; overflow: auto; }
+  .dlg footer { display: flex; gap: 8px; justify-content: flex-end; padding: 14px 20px 18px; flex-wrap: wrap; }
+  .dlg footer .spacer { flex: 1; }
+  label.f { display: block; font-size: .85rem; color: var(--muted); margin: 14px 0 6px; font-weight: 500; }
+  .dlg input[type=text], .dlg select, .dlg textarea {
+    width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px;
+    background: var(--bg); outline: none;
+  }
+  .dlg textarea { min-height: 120px; resize: vertical; line-height: 1.5; }
+  .dlg input:focus, .dlg select:focus, .dlg textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+  .seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .seg button {
+    border: 1px solid var(--line); background: var(--bg); padding: 10px 6px;
+    border-radius: 10px; cursor: pointer; font-size: .9rem;
+  }
+  .seg button[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); font-weight: 600; }
+  .err { color: var(--danger); font-size: .9rem; min-height: 1.3em; margin: 10px 0 0; }
+  .note { color: var(--muted); font-size: .85rem; margin: 6px 0 0; }
+
+  /* receptvy */
+  .recipe-view .crumbs { color: var(--muted); font-size: .85rem; padding: 0 20px; }
+  .recipe-view h3 { font: 600 1rem/1.3 var(--font); margin: 16px 0 6px; }
+  .recipe-view ul { margin: 0; padding-left: 20px; }
+  .recipe-view ol { margin: 0; padding-left: 22px; }
+  .recipe-view li { margin: 4px 0; }
+  .recipe-view .blank { color: var(--muted); font-style: italic; }
+
+  .toast {
+    position: fixed; left: 50%; bottom: 92px; transform: translateX(-50%) translateY(20px);
+    background: var(--text); color: var(--bg); padding: 10px 16px; border-radius: 999px;
+    opacity: 0; pointer-events: none; transition: .2s; font-size: .9rem; max-width: calc(100vw - 32px);
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .loading { color: var(--muted); padding: 24px 4px; }
+  @media (prefers-reduced-motion: reduce) { *, *::before { animation: none !important; transition: none !important; } }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+</style>
+</head>
+<body>
+
+<header class="top gutter">
+  <div class="brand"><h1>Veras Kokbok</h1><button type="button" class="env" id="envBadge" hidden>TEST</button></div>
+  <nav class="tabs" role="tablist">
+    <button class="tab" role="tab" aria-selected="true">Kategorier</button>
+  </nav>
+</header>
+
+<main class="wrap gutter">
+  <div class="toolbar">
+    <div class="search" id="searchBox">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <label class="sr" for="q">Sök kategori eller recept</label>
+      <input id="q" type="search" placeholder="Sök kategori, underkategori eller recept" autocomplete="off">
+      <button class="clear" id="clearQ" aria-label="Rensa sökning">✕</button>
+    </div>
+    <button class="btn" id="editToggle" aria-pressed="false">Redigera</button>
+  </div>
+  <div id="results" class="results" hidden></div>
+  <p class="hint" id="editHint" hidden>Redigeringsläge: byt namn, flytta eller ta bort med knapparna på varje rad.</p>
+  <ul class="tree" id="tree"><li class="loading" style="border:0;box-shadow:none;background:none">Laddar…</li></ul>
+</main>
+
+<button class="fab" id="addBtn" aria-label="Lägg till">
+  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+</button>
+
+<!-- Lägg till / redigera -->
+<dialog id="editDlg">
+  <form class="dlg" id="editForm" method="dialog" novalidate>
+    <header><h2 id="editTitle">Lägg till</h2></header>
+    <div class="body">
+      <div id="typeWrap">
+        <label class="f">Vad vill du lägga till?</label>
+        <div class="seg" id="typeSeg">
+          <button type="button" data-type="main" aria-pressed="true">Huvudkategori</button>
+          <button type="button" data-type="sub" aria-pressed="false">Underkategori</button>
+          <button type="button" data-type="recipe" aria-pressed="false">Recept</button>
+        </div>
+      </div>
+      <label class="f" for="fName">Namn</label>
+      <input type="text" id="fName" maxlength="120" required>
+      <div id="parentWrap">
+        <label class="f" for="fParent" id="parentLabel">Hör till</label>
+        <select id="fParent"></select>
+        <p class="note" id="parentNote"></p>
+      </div>
+      <div id="recipeFields">
+        <label class="f" for="fIng">Ingredienser <span style="font-weight:400">(en per rad)</span></label>
+        <textarea id="fIng" placeholder="4 dl vetemjöl&#10;2 ägg&#10;3 dl mjölk"></textarea>
+        <label class="f" for="fIns">Gör så här <span style="font-weight:400">(ett steg per rad)</span></label>
+        <textarea id="fIns" placeholder="Vispa ihop mjöl och hälften av mjölken.&#10;Tillsätt resten av mjölken och äggen."></textarea>
+      </div>
+      <p class="err" id="editErr" role="alert"></p>
+    </div>
+    <footer>
+      <button type="button" class="btn danger" id="delInDlg" hidden>Ta bort</button>
+      <span class="spacer"></span>
+      <button type="button" class="btn" data-close>Avbryt</button>
+      <button type="submit" class="btn primary" id="saveBtn">Spara</button>
+    </footer>
+  </form>
+</dialog>
+
+<!-- Visa recept -->
+<dialog id="viewDlg">
+  <div class="dlg recipe-view">
+    <header><h2 id="vTitle"></h2></header>
+    <div class="crumbs" id="vCrumbs"></div>
+    <div class="body" id="vBody"></div>
+    <footer>
+      <button type="button" class="btn" id="vEdit">Redigera</button>
+      <span class="spacer"></span>
+      <button type="button" class="btn primary" data-close>Stäng</button>
+    </footer>
+  </div>
+</dialog>
+
+<!-- Bekräfta -->
+<dialog id="confirmDlg">
+  <div class="dlg">
+    <header><h2 id="cTitle">Ta bort?</h2></header>
+    <div class="body"><p id="cText" style="margin:4px 0 0"></p></div>
+    <footer>
+      <span class="spacer"></span>
+      <button type="button" class="btn" data-close>Avbryt</button>
+      <button type="button" class="btn primary" id="cOk" style="background:var(--danger);border-color:var(--danger);color:var(--accent-ink)">Ta bort</button>
+    </footer>
+  </div>
+</dialog>
+
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+(() => {
+  "use strict";
+
+  // ---------- tillstånd
+  let nodes = [];
+  let byId = new Map();
+  let kids = new Map();          // parentKey -> [nodes]
+  const open = new Set(loadOpen());
+  let editing = false;
+  let form = null;               // { mode: 'create'|'edit', id, type: 'main'|'sub'|'recipe' }
+
+  const $ = (s) => document.querySelector(s);
+  const treeEl = $("#tree"), resultsEl = $("#results"), q = $("#q");
+
+  const ICONS = {
+    chev: '<svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>',
+    chevNone: '<svg class="chev none" width="18" height="18"></svg>',
+    recipe: '<svg class="ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h11a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M8 8h6M8 12h6"/></svg>',
+    edit: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>',
+    plus: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
+    del: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg>',
+  };
+
+  // ---------- hjälpare
+  const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const norm = (s) => s.toLocaleLowerCase("sv");
+  const coll = new Intl.Collator("sv", { sensitivity: "base", numeric: true });
+
+  function loadOpen() {
+    try { return JSON.parse(localStorage.getItem("kokbok.open") || "[]"); } catch { return []; }
+  }
+  function saveOpen() {
+    try { localStorage.setItem("kokbok.open", JSON.stringify([...open])); } catch {}
+  }
+
+  function toast(msg) {
+    const t = $("#toast");
+    t.textContent = msg;
+    t.classList.add("show");
+    clearTimeout(toast._t);
+    toast._t = setTimeout(() => t.classList.remove("show"), 2600);
+  }
+
+  // ---------- förhandsvisning: samma API som servern, men i webbläsaren (används när ingen server svarar)
+  let preview = null;
+
+  function makePreview() {
+    const TEMPLATE = [
+      ["Frukost & brunch", []], ["Förrätter & smårätter", []],
+      ["Huvudrätter", ["Kött", "Fågel", "Fisk & skaldjur", "Vegetariskt", "Pasta & nudlar"]],
+      ["Soppor & grytor", []], ["Sallader", []], ["Såser & tillbehör", []],
+      ["Bakning", ["Bröd", "Kakor & småkakor", "Tårtor & långpannor"]],
+      ["Efterrätter", []], ["Drycker", []],
+    ];
+    const KEY = "kokbok.preview.v1";
+    let db = null;
+    try { db = JSON.parse(localStorage.getItem(KEY) || "null"); } catch {}
+    if (!db || !Array.isArray(db.nodes)) {
+      db = { seq: 0, nodes: [] };
+      const add = (parent_id, name, is_system = false) => {
+        const now = Date.now() / 1000;
+        const n = { id: ++db.seq, parent_id, type: "category", name, ingredients: "", instructions: "", is_system, created_at: now, updated_at: now };
+        db.nodes.push(n);
+        return n;
+      };
+      for (const [name, subs] of TEMPLATE) { const m = add(null, name); subs.forEach((s) => add(m.id, s)); }
+      add(null, "Övrigt", true);
+    }
+    const persist = () => { try { localStorage.setItem(KEY, JSON.stringify(db)); } catch {} };
+    const fail = (status, msg) => { const e = new Error(msg); e.status = status; throw e; };
+    const get = (id, status = 404) => db.nodes.find((n) => n.id === id) || fail(status, "Hittade inte det du letade efter - ladda om sidan.");
+    const desc = (id) => db.nodes.filter((n) => n.parent_id === id).flatMap((n) => [n.id, ...desc(n.id)]);
+    const cleanName = (v) => {
+      if (typeof v !== "string" || !v.trim()) fail(400, "Namnet får inte vara tomt.");
+      v = v.trim().replace(/\s+/g, " ");
+      if (v.length > 120) fail(400, "Namnet får vara högst 120 tecken.");
+      return v;
+    };
+    const cleanText = (v) => (typeof v === "string" ? v.trim() : "");
+    const parseParent = (v) => (v === null || v === undefined || v === "" ? null : Number(v));
+    const checkParent = (type, pid, selfId = null) => {
+      if (pid === null) { if (type === "recipe") fail(400, "Ett recept måste ligga i en kategori."); return null; }
+      const p = get(pid, 400);
+      if (p.type !== "category") fail(400, "Det går bara att lägga saker i en kategori.");
+      if (selfId !== null && type === "category" && (pid === selfId || desc(selfId).includes(pid)))
+        fail(400, "En kategori kan inte flyttas in i sig själv eller sina underkategorier.");
+      return pid;
+    };
+    const checkDup = (type, name, pid, selfId = null) => {
+      const d = db.nodes.find((n) => n.type === type && n.parent_id === pid && n.id !== selfId && n.name.toLocaleLowerCase("sv") === name.toLocaleLowerCase("sv"));
+      if (d) fail(409, `Det finns redan ${type === "recipe" ? "ett recept" : "en kategori"} som heter "${d.name}" här.`);
+    };
+    const copy = (o) => JSON.parse(JSON.stringify(o));
+
+    return {
+      handle(method, url, body = {}) {
+        if (url === "/api/health") return { ok: true, env: "preview" };
+        const m = url.match(/^\/api\/nodes(?:\/(\d+))?$/);
+        if (!m) fail(404, "Okänd adress.");
+        const id = m[1] ? Number(m[1]) : null;
+        const now = Date.now() / 1000;
+
+        if (method === "GET" && id === null) return { nodes: copy(db.nodes) };
+
+        if (method === "POST" && id === null) {
+          if (!["category", "recipe"].includes(body.type)) fail(400, "Okänd typ.");
+          const name = cleanName(body.name);
+          const pid = checkParent(body.type, parseParent(body.parent_id));
+          checkDup(body.type, name, pid);
+          const isR = body.type === "recipe";
+          const n = { id: ++db.seq, parent_id: pid, type: body.type, name,
+            ingredients: isR ? cleanText(body.ingredients) : "", instructions: isR ? cleanText(body.instructions) : "",
+            is_system: false, created_at: now, updated_at: now };
+          db.nodes.push(n); persist();
+          return { node: copy(n) };
+        }
+
+        if (method === "PUT" && id !== null) {
+          const n = get(id);
+          const name = "name" in body ? cleanName(body.name) : n.name;
+          let pid = n.parent_id;
+          if ("parent_id" in body) {
+            const np = parseParent(body.parent_id);
+            if (np !== pid) {
+              if (n.is_system) fail(400, `${n.name} ligger alltid på högsta nivån och kan inte flyttas.`);
+              pid = checkParent(n.type, np, id);
+            }
+          }
+          checkDup(n.type, name, pid, id);
+          Object.assign(n, { name, parent_id: pid, updated_at: now });
+          if (n.type === "recipe") {
+            if ("ingredients" in body) n.ingredients = cleanText(body.ingredients);
+            if ("instructions" in body) n.instructions = cleanText(body.instructions);
+          }
+          persist();
+          return { node: copy(n) };
+        }
+
+        if (method === "DELETE" && id !== null) {
+          const n = get(id);
+          if (n.is_system) fail(400, `${n.name} kan inte tas bort - dit hamnar recept som saknar kategori.`);
+          if (n.type === "recipe") {
+            db.nodes = db.nodes.filter((x) => x.id !== id); persist();
+            return { deleted_categories: 0, deleted_recipes: 1, moved_recipes: 0 };
+          }
+          const ids = new Set([id, ...desc(id)]);
+          const target = db.nodes.find((x) => x.is_system).id;
+          let moved = 0, deleted = 0;
+          for (const x of db.nodes) if (ids.has(x.id) && x.type === "recipe") { x.parent_id = target; x.updated_at = now; moved++; }
+          db.nodes = db.nodes.filter((x) => { const kill = ids.has(x.id) && x.type === "category"; if (kill) deleted++; return !kill; });
+          persist();
+          return { deleted_categories: deleted, deleted_recipes: 0, moved_recipes: moved };
+        }
+        fail(405, "Metoden stöds inte.");
+      },
+      reset() { try { localStorage.removeItem(KEY); } catch {} },
+    };
+  }
+
+  async function detectBackend() {
+    try {
+      const res = await fetch("/api/health", { cache: "no-store" });
+      const h = await res.json();
+      if (res.ok && h && h.ok === true) return h.env || "prod";
+    } catch {}
+    preview = makePreview();
+    return "preview";
+  }
+
+  async function api(method, url, body) {
+    if (preview) {
+      try { return preview.handle(method, url, body); }
+      catch (e) { throw new Error(e.message || "Något gick fel."); }
+    }
+    const res = await fetch(url, {
+      method,
+      headers: body ? { "Content-Type": "application/json" } : {},
+      body: body ? JSON.stringify(body) : undefined,
+    });
+    let data = {};
+    try { data = await res.json(); } catch {}
+    if (!res.ok) throw new Error(data.error || `Något gick fel (${res.status}).`);
+    return data;
+  }
+
+  function index() {
+    byId = new Map(nodes.map((n) => [n.id, n]));
+    kids = new Map();
+    for (const n of nodes) {
+      const k = n.parent_id ?? "root";
+      if (!kids.has(k)) kids.set(k, []);
+      kids.get(k).push(n);
+    }
+    for (const list of kids.values()) {
+      list.sort((a, b) => {
+        if (a.type !== b.type) return a.type === "category" ? -1 : 1;   // kategorier först
+        if (a.is_system !== b.is_system) return a.is_system ? 1 : -1;   // Övrigt sist
+        return coll.compare(a.name, b.name);
+      });
+    }
+  }
+
+  const children = (id) => kids.get(id ?? "root") || [];
+  function pathOf(id) {
+    const out = [];
+    let n = byId.get(id);
+    while (n) { out.unshift(n); n = byId.get(n.parent_id); }
+    return out;
+  }
+  function recipeCount(id) {
+    let c = 0;
+    for (const ch of children(id)) c += ch.type === "recipe" ? 1 : recipeCount(ch.id);
+    return c;
+  }
+  function descendants(id) {
+    const out = [];
+    for (const ch of children(id)) { out.push(ch); out.push(...descendants(ch.id)); }
+    return out;
+  }
+
+  async function load() {
+    try {
+      const data = await api("GET", "/api/nodes");
+      nodes = data.nodes;
+      index();
+      // städa bort öppna id:n som inte finns längre
+      for (const id of [...open]) if (!byId.has(id)) open.delete(id);
+      render();
+      if (q.value.trim()) search();
+    } catch (e) {
+      treeEl.innerHTML = `<li class="loading" style="border:0;box-shadow:none;background:none">Kunde inte ladda: ${esc(e.message)}</li>`;
+    }
+  }
+
+  // ---------- rendering av trädet
+  function render() {
+    treeEl.innerHTML = children(null).map(renderNode).join("") ||
+      '<li class="loading" style="border:0;box-shadow:none;background:none">Inga kategorier än – tryck på + för att börja.</li>';
+  }
+
+  function renderNode(n) {
+    if (n.type === "recipe") {
+      return `<li class="recipe" data-id="${n.id}">
+        <div class="row" id="n${n.id}">
+          <button class="toggle" data-act="view">${ICONS.chevNone}${ICONS.recipe}<span class="name">${esc(n.name)}</span></button>
+          <span class="acts">
+            <button class="icon-btn" data-act="edit" title="Redigera" aria-label="Redigera ${esc(n.name)}">${ICONS.edit}</button>
+            <button class="icon-btn del" data-act="del" title="Ta bort" aria-label="Ta bort ${esc(n.name)}">${ICONS.del}</button>
+          </span>
+        </div></li>`;
+    }
+    const ch = children(n.id);
+    const isOpen = open.has(n.id);
+    const cnt = recipeCount(n.id);
+    const subCats = ch.filter((c) => c.type === "category").length;
+    const meta = [subCats ? `${subCats} under` : "", cnt ? `${cnt} recept` : ""].filter(Boolean).join(" · ");
+    return `<li class="cat${isOpen ? " open" : ""}" data-id="${n.id}">
+      <div class="row" id="n${n.id}">
+        <button class="toggle" data-act="toggle" aria-expanded="${isOpen}">${ICONS.chev}<span class="name">${esc(n.name)}</span>
+          ${n.is_system ? '<span class="badge">Osorterat</span>' : ""}</button>
+        ${meta ? `<span class="count">${meta}</span>` : ""}
+        <span class="acts">
+          <button class="icon-btn" data-act="add" title="Lägg till här" aria-label="Lägg till i ${esc(n.name)}">${ICONS.plus}</button>
+          <button class="icon-btn" data-act="edit" title="Byt namn / flytta" aria-label="Redigera ${esc(n.name)}">${ICONS.edit}</button>
+          ${n.is_system ? "" : `<button class="icon-btn del" data-act="del" title="Ta bort" aria-label="Ta bort ${esc(n.name)}">${ICONS.del}</button>`}
+        </span>
+      </div>
+      <ul>${ch.length ? ch.map(renderNode).join("") : '<li class="empty-cat">Tomt här än.</li>'}</ul>
+    </li>`;
+  }
+
+  treeEl.addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-act]");
+    if (!btn) return;
+    const id = Number(btn.closest("li[data-id]").dataset.id);
+    const n = byId.get(id);
+    switch (btn.dataset.act) {
+      case "toggle": {
+        const li = btn.closest("li");
+        const nowOpen = !li.classList.contains("open");
+        li.classList.toggle("open", nowOpen);
+        btn.setAttribute("aria-expanded", nowOpen);
+        nowOpen ? open.add(id) : open.delete(id);
+        saveOpen();
+        break;
+      }
+      case "view": showRecipe(n); break;
+      case "edit": openForm("edit", n); break;
+      case "add": openForm("create", null, n); break;
+      case "del": confirmDelete(n); break;
+    }
+  });
+
+  // ---------- gå direkt till en nod
+  function reveal(id) {
+    for (const p of pathOf(id).slice(0, -1)) open.add(p.id);
+    const n = byId.get(id);
+    if (n && n.type === "category") open.add(id);
+    saveOpen();
+    render();
+    const row = document.getElementById("n" + id);
+    if (row) {
+      row.scrollIntoView({ behavior: "smooth", block: "start" });
+      row.classList.remove("flash"); void row.offsetWidth; row.classList.add("flash");
+    }
+  }
+
+  // ---------- sök
+  function search() {
+    const term = norm(q.value.trim());
+    $("#searchBox").classList.toggle("has-text", !!q.value);
+    if (!term) { resultsEl.hidden = true; resultsEl.innerHTML = ""; return; }
+    const words = term.split(/\s+/);
+    const hits = nodes
+      .map((n) => {
+        const name = norm(n.name);
+        const full = norm(pathOf(n.id).map((p) => p.name).join(" "));
+        if (!words.every((w) => full.includes(w))) return null;
+        let score = 3;
+        if (name === term) score = 0;
+        else if (name.startsWith(term)) score = 1;
+        else if (name.includes(term)) score = 2;
+        return { n, score };
+      })
+      .filter(Boolean)
+      .sort((a, b) => a.score - b.score || (a.n.type === b.n.type ? 0 : a.n.type === "category" ? -1 : 1) || coll.compare(a.n.name, b.n.name))
+      .slice(0, 30);
+
+    if (!hits.length) {
+      resultsEl.innerHTML = `<div class="empty">Inget matchar "${esc(q.value.trim())}".</div>`;
+    } else {
+      resultsEl.innerHTML = hits.map(({ n }) => {
+        const path = pathOf(n.id).slice(0, -1).map((p) => esc(p.name)).join(" › ");
+        const kind = n.type === "recipe" ? "Recept" : n.parent_id == null ? "Huvudkategori" : "Underkategori";
+        return `<button data-id="${n.id}">${n.type === "recipe" ? ICONS.recipe : ""}
+          <span style="flex:1;min-width:0"><span>${highlight(n.name, words)}</span>
+          ${path ? `<br><span class="path">${path}</span>` : ""}</span>
+          <span class="badge">${kind}</span></button>`;
+      }).join("");
+    }
+    resultsEl.hidden = false;
+  }
+
+  function highlight(text, words) {
+    const lower = norm(text);
+    const marks = new Array(text.length).fill(false);
+    for (const w of words) {
+      let i = lower.indexOf(w);
+      while (w && i !== -1) { for (let k = i; k < i + w.length; k++) marks[k] = true; i = lower.indexOf(w, i + w.length); }
+    }
+    let out = "", on = false;
+    for (let i = 0; i < text.length; i++) {
+      if (marks[i] !== on) { out += marks[i] ? "<mark>" : "</mark>"; on = marks[i]; }
+      out += esc(text[i]);
+    }
+    return out + (on ? "</mark>" : "");
+  }
+
+  q.addEventListener("input", search);
+  q.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") { const first = resultsEl.querySelector("button[data-id]"); if (first) first.click(); }
+    if (e.key === "Escape") { q.value = ""; search(); }
+  });
+  $("#clearQ").addEventListener("click", () => { q.value = ""; search(); q.focus(); });
+  resultsEl.addEventListener("click", (e) => {
+    const b = e.target.closest("button[data-id]");
+    if (!b) return;
+    const n = byId.get(Number(b.dataset.id));
+    q.value = ""; search();
+    reveal(n.id);
+    if (n.type === "recipe") showRecipe(n);
+  });
+
+  // ---------- redigeringsläge
+  $("#editToggle").addEventListener("click", () => {
+    editing = !editing;
+    document.body.classList.toggle("editing", editing);
+    $("#editToggle").setAttribute("aria-pressed", editing);
+    $("#editToggle").classList.toggle("on", editing);
+    $("#editToggle").textContent = editing ? "Klar" : "Redigera";
+    $("#editHint").hidden = !editing;
+  });
+
+  // ---------- formulär (lägg till / redigera)
+  const dlg = $("#editDlg");
+  document.querySelectorAll("dialog [data-close]").forEach((b) => b.addEventListener("click", () => b.closest("dialog").close()));
+  document.querySelectorAll("dialog").forEach((d) => d.addEventListener("click", (e) => { if (e.target === d) d.close(); }));
+
+  $("#addBtn").addEventListener("click", () => openForm("create"));
+  $("#typeSeg").addEventListener("click", (e) => {
+    const b = e.target.closest("button[data-type]");
+    if (b) setType(b.dataset.type);
+  });
+
+  function categoryOptions({ exclude = new Set(), includeNone = false, selected = null } = {}) {
+    const opts = [];
+    if (includeNone) opts.push(`<option value="">— Ingen (gör till huvudkategori) —</option>`);
+    const walk = (parentId, depth) => {
+      for (const c of children(parentId)) {
+        if (c.type !== "category" || exclude.has(c.id)) continue;
+        const label = pathOf(c.id).map((p) => p.name).join(" › ");
+        opts.push(`<option value="${c.id}"${c.id === selected ? " selected" : ""}>${esc(label)}</option>`);
+        walk(c.id, depth + 1);
+      }
+    };
+    walk(null, 0);
+    return opts.join("");
+  }
+
+  function setType(type) {
+    form.type = type;
+    document.querySelectorAll("#typeSeg button").forEach((b) => b.setAttribute("aria-pressed", b.dataset.type === type));
+    const sel = $("#fParent");
+    const node = form.mode === "edit" ? byId.get(form.id) : null;
+    const exclude = node && node.type === "category" ? new Set([node.id, ...descendants(node.id).map((d) => d.id)]) : new Set();
+    const wanted = form.parentPick ?? (node ? node.parent_id : null);
+
+    $("#recipeFields").hidden = type !== "recipe";
+    $("#parentWrap").hidden = false;
+    sel.disabled = false;
+    $("#parentNote").textContent = "";
+
+    if (type === "main") {
+      if (form.mode === "create") { $("#parentWrap").hidden = true; }
+      else {
+        $("#parentLabel").textContent = "Placering";
+        sel.innerHTML = categoryOptions({ exclude, includeNone: true, selected: wanted });
+        if (node.is_system) $("#parentNote").textContent = "Övrigt ligger alltid på högsta nivån och går inte att flytta eller ta bort.";
+      }
+    } else if (type === "sub") {
+      $("#parentLabel").textContent = "Hör till kategori";
+      sel.innerHTML = categoryOptions({ exclude, includeNone: form.mode === "edit", selected: wanted });
+      if (form.mode === "edit") $("#parentLabel").textContent = "Placering";
+    } else {
+      $("#parentLabel").textContent = "Kategori / underkategori";
+      const fallback = wanted ?? nodes.find((n) => n.is_system)?.id ?? null;
+      sel.innerHTML = categoryOptions({ selected: fallback });
+      $("#parentNote").textContent = "Vet du inte var det ska ligga? Välj Övrigt och flytta det senare.";
+    }
+    if (node && node.is_system) sel.disabled = true;
+    $("#fName").placeholder = type === "recipe" ? "t.ex. Pannkakor" : type === "sub" ? "t.ex. Grytor" : "t.ex. Huvudrätter";
+  }
+
+  function openForm(mode, node = null, parent = null) {
+    form = { mode, id: node?.id ?? null, type: "main", parentPick: parent?.id ?? null };
+    $("#editErr").textContent = "";
+    $("#fName").value = node?.name ?? "";
+    $("#fIng").value = node?.ingredients ?? "";
+    $("#fIns").value = node?.instructions ?? "";
+    $("#typeWrap").hidden = mode === "edit";
+    $("#delInDlg").hidden = !(mode === "edit" && !node.is_system);
+
+    let type;
+    if (mode === "edit") type = node.type === "recipe" ? "recipe" : node.parent_id == null ? "main" : "sub";
+    else type = parent ? "sub" : "main";
+
+    $("#editTitle").textContent = mode === "create" ? (parent ? `Lägg till i ${parent.name}` : "Lägg till")
+      : node.type === "recipe" ? "Redigera recept" : "Redigera kategori";
+    setType(type);
+    dlg.showModal();
+    setTimeout(() => $("#fName").focus(), 30);
+  }
+
+  // Byt mellan underkategori/recept när man lägger till "här" i en kategori: behåll vald förälder
+  $("#fParent").addEventListener("change", () => { form.parentPick = $("#fParent").value ? Number($("#fParent").value) : null; });
+
+  $("#editForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const name = $("#fName").value.trim();
+    if (!name) { $("#editErr").textContent = "Skriv ett namn."; $("#fName").focus(); return; }
+    const parentVal = $("#parentWrap").hidden ? null : ($("#fParent").value ? Number($("#fParent").value) : null);
+    if (form.mode === "create" && form.type !== "main" && parentVal == null) {
+      $("#editErr").textContent = form.type === "recipe" ? "Välj en kategori för receptet." : "Välj vilken kategori den hör till.";
+      return;
+    }
+    const body = { name };
+    if (form.type === "recipe") { body.ingredients = $("#fIng").value; body.instructions = $("#fIns").value; }
+    const btn = $("#saveBtn");
+    btn.disabled = true;
+    try {
+      let saved;
+      if (form.mode === "create") {
+        body.type = form.type === "recipe" ? "recipe" : "category";
+        body.parent_id = form.type === "main" ? null : parentVal;
+        saved = (await api("POST", "/api/nodes", body)).node;
+      } else {
+        const node = byId.get(form.id);
+        if (!node.is_system) body.parent_id = parentVal;
+        saved = (await api("PUT", `/api/nodes/${form.id}`, body)).node;
+      }
+      dlg.close();
+      await load();
+      reveal(saved.id);
+      toast(form.mode === "create" ? `"${saved.name}" har lagts till` : "Ändringen är sparad");
+    } catch (err) {
+      $("#editErr").textContent = err.message;
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  $("#delInDlg").addEventListener("click", () => { const n = byId.get(form.id); dlg.close(); confirmDelete(n); });
+
+  // ---------- ta bort
+  function askConfirm(title, text, okLabel, onOk) {
+    const c = $("#confirmDlg");
+    $("#cTitle").textContent = title;
+    $("#cText").textContent = text;
+    $("#cOk").textContent = okLabel;
+    $("#cOk").onclick = () => { c.close(); onOk(); };
+    c.showModal();
+  }
+
+  function confirmDelete(n) {
+    const c = $("#confirmDlg");
+    $("#cOk").textContent = "Ta bort";
+    $("#cTitle").textContent = `Ta bort "${n.name}"?`;
+    if (n.type === "recipe") {
+      $("#cText").textContent = "Receptet tas bort permanent.";
+    } else {
+      const d = descendants(n.id);
+      const subs = d.filter((x) => x.type === "category").length;
+      const recs = d.filter((x) => x.type === "recipe").length;
+      const parts = [];
+      if (subs) parts.push(`${subs} underkategori${subs === 1 ? "" : "er"} tas också bort.`);
+      parts.push(recs ? `${recs} recept flyttas till Övrigt – inga recept försvinner.` : "Det finns inga recept här.");
+      $("#cText").textContent = parts.join(" ");
+    }
+    $("#cOk").onclick = async () => {
+      try {
+        const r = await api("DELETE", `/api/nodes/${n.id}`);
+        c.close();
+        await load();
+        toast(r.moved_recipes ? `Borttagen – ${r.moved_recipes} recept flyttade till Övrigt` : "Borttagen");
+      } catch (err) { c.close(); toast(err.message); }
+    };
+    c.showModal();
+  }
+
+  // ---------- visa recept
+  let viewing = null;
+  function showRecipe(n) {
+    viewing = n;
+    $("#vTitle").textContent = n.name;
+    $("#vCrumbs").textContent = pathOf(n.id).slice(0, -1).map((p) => p.name).join(" › ");
+    const lines = (s) => s.split("\n").map((l) => l.trim()).filter(Boolean);
+    const ing = lines(n.ingredients), ins = lines(n.instructions);
+    $("#vBody").innerHTML = `
+      <h3>Ingredienser</h3>
+      ${ing.length ? `<ul>${ing.map((l) => `<li>${esc(l)}</li>`).join("")}</ul>` : '<p class="blank">Inga ingredienser inlagda än.</p>'}
+      <h3>Gör så här</h3>
+      ${ins.length ? `<ol>${ins.map((l) => `<li>${esc(l)}</li>`).join("")}</ol>` : '<p class="blank">Inga instruktioner inlagda än.</p>'}`;
+    $("#viewDlg").showModal();
+  }
+  $("#vEdit").addEventListener("click", () => { $("#viewDlg").close(); openForm("edit", byId.get(viewing.id)); });
+
+  detectBackend().then((env) => {
+    if (env === "preview") {
+      document.body.classList.add("test");
+      const b = $("#envBadge");
+      b.textContent = "FÖRHANDSVISNING";
+      b.title = "Datan sparas bara i den här webbläsaren. Klicka för att återställa till startmallen.";
+      b.style.cursor = "pointer";
+      b.hidden = false;
+      b.addEventListener("click", () => askConfirm(
+        "Återställa förhandsvisningen?",
+        "Allt du har lagt till i förhandsvisningen tas bort och startmallen läggs tillbaka. Den riktiga kokboken påverkas inte.",
+        "Återställ",
+        () => { preview.reset(); preview = makePreview(); load(); toast("Förhandsvisningen är återställd"); }
+      ));
+      document.title = "Förhandsvisning – Veras Kokbok";
+    }
+    load();
+  });
+})();
+</script>
+</body>
+</html>

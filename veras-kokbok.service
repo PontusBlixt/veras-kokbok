@@ -1,0 +1,16 @@
+[Unit]
+Description=Veras Kokbok
+After=network.target
+
+[Service]
+Type=simple
+# Byt ANVANDARE mot ditt användarnamn på servern
+User=ANVANDARE
+WorkingDirectory=/home/ANVANDARE/veras-kokbok
+Environment=KOKBOK_HOST=127.0.0.1
+Environment=KOKBOK_PORT=8090
+ExecStart=/usr/bin/python3 /home/ANVANDARE/veras-kokbok/server.py
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

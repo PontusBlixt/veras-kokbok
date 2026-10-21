@@ -1,0 +1,7 @@
+# Databasen och säkerhetskopior lever bara på servern
+data/
+*.db
+*.db-*
+__pycache__/
+*.pyc
+.DS_Store

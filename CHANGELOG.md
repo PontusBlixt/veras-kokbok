@@ -1,5 +1,11 @@
 # Ändringslogg
 
+## v0.6.0 – 2026-10-23
+- Appen går att **installera** (PWA): manifest, ikoner (skål med ånga) och service worker. Genvägar till *Laga* och *Ingredienser* när man håller inne ikonen
+- Fungerar på Android, iPhone (Lägg till på hemskärmen) och dator, via Tailscale-adressen (HTTPS)
+- Når appen inte servern visas "Kan inte nå kokboken" i stället för förhandsvisningsläget, och den laddar om sig själv när servern svarar igen
+- Recept, skafferi och bilder sparas aldrig i service workern, utan hämtas alltid från servern
+
 ## v0.5.0 – 2026-10-23
 - Ny flik **Laga** (`#laga`): visar vilka recept som går att laga med det som finns hemma
   - **Kan lagas nu** – alla vitala ingredienser finns hemma

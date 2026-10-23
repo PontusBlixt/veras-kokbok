@@ -12,6 +12,8 @@ Miljövariabler:
 """
 import json
 import mimetypes
+mimetypes.add_type("application/manifest+json", ".webmanifest")
+mimetypes.add_type("text/javascript", ".js")
 import os
 import re
 import secrets
@@ -24,7 +26,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlparse
 
-VERSION = "0.5.0"
+VERSION = "0.6.0"
 
 BASE_DIR = Path(__file__).resolve().parent
 STATIC_DIR = (BASE_DIR / "static").resolve()

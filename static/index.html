@@ -7,6 +7,13 @@
 <title>Veras Kokbok</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <meta name="theme-color" content="#f3f5ef">
+<link rel="manifest" href="/manifest.webmanifest" data-app>
+<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" data-app>
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" data-app>
+<meta name="mobile-web-app-capable" content="yes" data-app>
+<meta name="apple-mobile-web-app-capable" content="yes" data-app>
+<meta name="apple-mobile-web-app-title" content="Kokboken" data-app>
+<meta name="apple-mobile-web-app-status-bar-style" content="default" data-app>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Figtree:wght@400;500;600&display=swap">
 <style>
@@ -935,7 +942,7 @@
     };
   }
 
-  const APP_VERSION = "0.5.0";   // ska vara samma som VERSION i server.py
+  const APP_VERSION = "0.6.0";   // ska vara samma som VERSION i server.py
   let serverVersion = null;
 
   async function detectBackend() {
@@ -943,7 +950,10 @@
       const res = await fetch("/api/health", { cache: "no-store" });
       const h = await res.json();
       if (res.ok && h && h.ok === true) { serverVersion = h.version || null; return h.env || "prod"; }
-    } catch {}
+    } catch {
+      // Sidan kom från vår service worker men servern svarar inte = appen är installerad men offline.
+      if (navigator.serviceWorker && navigator.serviceWorker.controller) return "offline";
+    }
     preview = makePreview();
     return "preview";
   }
@@ -1972,6 +1982,18 @@
       w.textContent = `Sidan är version ${APP_VERSION} men servern är ${serverVersion ? "version " + serverVersion : "en äldre version"}. ` +
         "Kontrollera att server.py och static/index.html kommer från samma version och starta om tjänsten.";
       w.hidden = false;
+    }
+    if (env === "offline") {
+      const w = $("#versionWarn");
+      w.textContent = "Kan inte nå kokboken just nu. Kontrollera att Tailscale är igång eller att du är på hemnätet. Sidan laddas om automatiskt när nätet är tillbaka.";
+      w.hidden = false;
+      treeEl.innerHTML = "";
+      window.addEventListener("online", () => location.reload());
+      setInterval(() => fetch("/api/health", { cache: "no-store" }).then((r) => r.ok && location.reload()).catch(() => {}), 15000);
+      return;
+    }
+    if (env !== "preview" && "serviceWorker" in navigator && window.isSecureContext) {
+      navigator.serviceWorker.register("/sw.js").catch(() => {});
     }
     load();
     loadPantry();

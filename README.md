@@ -6,6 +6,7 @@ Körs på hemmaservern i `~/veras-kokbok` och nås via Tailscale.
 ## Innehåll
 - `server.py` – servern och API:t
 - `static/index.html` – appen (ska ligga i mappen `static/`, inte i roten)
+- `static/manifest.webmanifest`, `static/sw.js`, `static/*.png` – gör att appen går att installera (namn, ikoner, service worker)
 - `veras-kokbok.service` – systemd-tjänst (mall, `ANVANDARE` byts vid installation)
 - `uppdatera.sh` – säkerhetskopierar databasen, hämtar senaste versionen och startar om
 - `CHANGELOG.md` – vad som ändrats i varje version
@@ -61,6 +62,17 @@ journalctl -u veras-kokbok -n 5 --no-pager   # ska visa "Lyssnar även på http:
 - Ge servern en fast adress (DHCP-reservation i routern). Byter den adress försöker appen igen var 30:e sekund och skriver det i loggen.
 - Kör du `ufw`: `sudo ufw allow from 192.168.50.0/24 to any port 8443 proto tcp`.
 - Appen har ingen inloggning. Alla på hemnätet (även gäster på wifi) kan se och ändra recept.
+
+## Installera som app
+Kräver **HTTPS**, alltså Tailscale-adressen `https://linux-server.tail532d25.ts.net:8443`. På `http://server.home:8443` går det bara att skapa ett bokmärke.
+
+- **Android (Chrome):** öppna adressen → ⋮ → *Installera app*.
+- **iPhone (Safari):** öppna adressen → Dela → *Lägg till på hemskärmen*.
+- **Dator (Chrome/Edge):** installera-ikonen längst till höger i adressfältet, eller ⋮ → *Spara och dela* → *Installera sidan som app*.
+
+Vill du installera från `http://server.home:8443` på en dator utan Tailscale: öppna `chrome://flags/#unsafely-treat-insecure-origin-as-secure`, skriv in `http://server.home:8443`, välj *Enabled* och starta om Chrome.
+
+Appen hämtar alltid senaste versionen från servern. Når den inte servern visas ett besked, och sidan laddas om av sig själv när nätet är tillbaka.
 
 ## Uppdatera till en ny version
 ```bash

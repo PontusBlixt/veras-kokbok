@@ -1,5 +1,16 @@
 # Ändringslogg
 
+## v0.5.0 – 2026-10-23
+- Ny flik **Laga** (`#laga`): visar vilka recept som går att laga med det som finns hemma
+  - **Kan lagas nu** – alla vitala ingredienser finns hemma
+  - **Saknar en sak** / **Saknar fler** – med det som saknas i orange
+  - **Okänt** – recept vars ingredienser inte finns i skafferiet än
+  - Filtrera på huvudkategori
+- Receptens ingrediensrader matchas mot skafferiet på namn, med enkel hantering av böjningar ("gula lökar" = "Gul lök", "finhackad gul lök" = "Gul lök")
+- Ingredienser som saknas i skafferiet kan läggas till direkt från Laga
+- Receptsidan visar vad som saknas hemma och märker raderna
+- Tillbaka-knappen på receptsidan går till fliken man kom ifrån
+
 ## v0.4.0 – 2026-10-21
 - Ny flik **Ingredienser** (skafferi): varje ingrediens läggs in en gång som **Vital** (antal med +/−, 0 = Slut) eller **Statisk** (finns alltid)
 - Filter Alla / Hemma / Slut, sök, "Spara + ny" för att lägga in många i rad

@@ -91,4 +91,7 @@ tar czf ~/kokbok-bilder-$(date +%F).tgz -C ~/veras-kokbok/data images
   - **Vital** – har ett antal. Tryck **+** när du handlat och **−** när den tar slut. 0 = *Slut*.
   - **Statisk** – finns alltid hemma (salt, olja …), inget antal.
   Filtrera på Alla / Hemma / Slut. Tryck på namnet för att byta namn, byta typ eller ta bort.
+- **Fliken Laga** (`#laga`): recepten sorteras i *Kan lagas nu*, *Saknar en sak*, *Saknar fler* och *Okänt*. Bara **vitala** ingredienser avgör. Statiska räknas alltid som hemma.
+  - Receptraderna matchas mot skafferiet på namn. Små bokstäver, böjningar och beskrivningar spelar ingen roll ("2 gula lökar, hackade" = "Gul lök"), men sammansatta ord matchar inte ("vitlöksklyftor" ≠ "Vitlök"). Skriv då "2 klyftor vitlök" i receptet.
+  - Ingredienser som inte finns i skafferiet visas som länkar under receptet. Tryck för att lägga till dem.
 - **Versionsvarning**: har `server.py` och `static/index.html` olika version visas en gul ruta överst i appen.

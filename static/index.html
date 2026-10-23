@@ -25,6 +25,10 @@
     --hit: #fff1b3;
     --env: #2563c9;
     --env-ink: #ffffff;
+    --out: #9a4a1c;         /* slut */
+    --out-soft: #f8e6d9;
+    --warn: #7a5200;
+    --warn-soft: #fff3d1;
     --shadow: 0 1px 2px rgba(20, 40, 30, .06), 0 4px 14px rgba(20, 40, 30, .06);
     --radius: 12px;
     --font: "Figtree", "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
@@ -35,6 +39,7 @@
       --bg: #131915; --surface: #1b231e; --surface-2: #232d27; --text: #e5ece6; --muted: #98a69d;
       --line: #2c3730; --accent: #7cc49a; --accent-ink: #0f1712; --accent-soft: #23392c; --danger: #f2867d;
       --hit: #4f4714; --env: #6ea0ff; --env-ink: #0d1422;
+      --out: #f0a978; --out-soft: #3a2619; --warn: #f2c56b; --warn-soft: #362c12;
       --shadow: 0 1px 2px rgba(0,0,0,.3), 0 4px 14px rgba(0,0,0,.25);
       color-scheme: dark;
     }
@@ -43,10 +48,12 @@
     --bg: #131915; --surface: #1b231e; --surface-2: #232d27; --text: #e5ece6; --muted: #98a69d;
     --line: #2c3730; --accent: #7cc49a; --accent-ink: #0f1712; --accent-soft: #23392c; --danger: #f2867d;
     --hit: #4f4714; --env: #6ea0ff; --env-ink: #0d1422;
+      --out: #f0a978; --out-soft: #3a2619; --warn: #f2c56b; --warn-soft: #362c12;
     --shadow: 0 1px 2px rgba(0,0,0,.3), 0 4px 14px rgba(0,0,0,.25);
     color-scheme: dark;
   }
   * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
   html, body { margin: 0; }
   body {
     background: var(--bg);
@@ -198,17 +205,134 @@
   .err { color: var(--danger); font-size: .9rem; min-height: 1.3em; margin: 10px 0 0; }
   .note { color: var(--muted); font-size: .85rem; margin: 6px 0 0; }
 
-  /* receptvy */
-  .recipe-view .crumbs { color: var(--muted); font-size: .85rem; padding: 0 20px; }
-  .recipe-view h3 { font: 600 1rem/1.3 var(--font); margin: 16px 0 6px; }
-  .recipe-view ul { margin: 0; padding-left: 20px; }
-  .recipe-view ol { margin: 0; padding-left: 22px; }
-  .recipe-view li { margin: 4px 0; }
-  .recipe-view .blank { color: var(--muted); font-style: italic; }
+  /* receptsidan */
+  .recipe-page { max-width: 760px; margin: 0 auto; padding-block: 12px 104px; }
+  .rp-top { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
+  .back {
+    display: inline-flex; align-items: center; gap: 4px; border: 1px solid var(--line); background: var(--surface);
+    padding: 8px 14px 8px 10px; border-radius: 999px; cursor: pointer; font-weight: 500;
+  }
+  .back:hover { border-color: var(--muted); }
+  .rp-crumbs { color: var(--muted); font-size: .88rem; min-width: 0; }
+  .rp-hero {
+    margin: 0; border-radius: 18px; overflow: hidden; background: var(--surface-2);
+    aspect-ratio: 4 / 3; max-height: 480px; width: 100%; max-width: 100%;
+  }
+  .rp-hero img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .rp-hero.empty {
+    display: grid; place-items: center; text-align: center; border: 2px dashed var(--line); background: var(--surface);
+    aspect-ratio: 16 / 7;
+  }
+  .rp-hero.empty .inner { display: grid; justify-items: center; gap: 10px; padding: 20px; color: var(--muted); }
+  .rp-head { display: flex; align-items: flex-start; gap: 12px; margin: 20px 0 6px; flex-wrap: wrap; }
+  .rp-title { font: 700 clamp(1.7rem, 5vw, 2.3rem)/1.1 var(--display); letter-spacing: -.015em; margin: 0; flex: 1; min-width: 0; text-wrap: balance; }
+  .rp-section { margin-top: 26px; }
+  .rp-label {
+    font: 700 .74rem/1 var(--font); text-transform: uppercase; letter-spacing: .12em; color: var(--accent);
+    margin: 0 0 10px; display: flex; align-items: baseline; gap: 8px;
+  }
+  .rp-label span { color: var(--muted); font-weight: 500; letter-spacing: .04em; text-transform: none; font-size: .8rem; }
+  .ing-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+  .ing-table { width: 100%; border-collapse: collapse; }
+  .ing-table td { padding: 10px 14px; border-top: 1px solid var(--line); vertical-align: baseline; }
+  .ing-table tr:first-child td { border-top: 0; }
+  .ing-table .amt {
+    width: 1%; white-space: nowrap; text-align: right; font-weight: 600;
+    font-variant-numeric: tabular-nums; padding-right: 6px;
+  }
+  .ing-table .unit { width: 1%; white-space: nowrap; color: var(--muted); padding-left: 0; padding-right: 14px; }
+  .ing-table .what { overflow-wrap: anywhere; }
+  .prose { font-size: 1.05rem; line-height: 1.7; max-width: 65ch; }
+  .prose p { margin: 0 0 1em; }
+  .blank { color: var(--muted); font-style: italic; margin: 0; }
+
+  /* formulär: ingrediensrader och bild */
+  .ing-rows { display: grid; gap: 6px; }
+  .ing-row { display: grid; grid-template-columns: 4.6em 5.4em minmax(0, 1fr) 36px; gap: 6px; align-items: center; }
+  .ing-row input { min-width: 0; }
+  .ing-row .amount { text-align: right; font-variant-numeric: tabular-nums; }
+  .ing-head { display: grid; grid-template-columns: 4.6em 5.4em minmax(0, 1fr) 36px; gap: 6px; font-size: .75rem; color: var(--muted); padding: 0 2px; }
+  .ing-head span:first-child { text-align: right; padding-right: 12px; }
+  .row-del { width: 36px; height: 36px; }
+  .ing-tools { display: flex; align-items: center; gap: 10px; margin-top: 8px; flex-wrap: wrap; }
+  .btn.small { padding: 7px 12px; font-size: .9rem; }
+  .img-pick { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .img-thumb {
+    width: 96px; height: 72px; border-radius: 10px; background: var(--surface-2) center / cover no-repeat;
+    border: 1px solid var(--line); flex: none; display: grid; place-items: center; color: var(--muted);
+  }
+  .img-pick .btns { display: flex; gap: 6px; flex-wrap: wrap; }
+  dialog.wide { width: min(680px, calc(100vw - 24px)); }
+  @media (max-width: 480px) {
+    .ing-row, .ing-head { grid-template-columns: 3.6em 5.2em minmax(0, 1fr) 32px; gap: 4px; }
+    .ing-row input { padding-left: 8px !important; padding-right: 8px !important; }
+  }
+
+  /* ingredienser (skafferi) */
+  .filters { display: flex; gap: 6px; margin: 0 0 16px; flex-wrap: wrap; }
+  .chip {
+    border: 1px solid var(--line); background: var(--surface); padding: 7px 14px;
+    border-radius: 999px; cursor: pointer; font-size: .9rem;
+  }
+  .chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 600; }
+  .p-section { margin-bottom: 24px; }
+  .p-head { font: 700 1.15rem/1.2 var(--display); margin: 0 0 2px; display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+  .p-head span { font: 500 .85rem/1.2 var(--font); color: var(--muted); }
+  .p-sub { color: var(--muted); font-size: .88rem; margin: 0 0 10px; }
+  .p-list {
+    list-style: none; margin: 0; padding: 0; background: var(--surface); border: 1px solid var(--line);
+    border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden;
+  }
+  .p-row { display: flex; align-items: center; gap: 8px; padding: 6px 8px 6px 4px; border-top: 1px solid var(--line); min-height: 58px; }
+  .p-row:first-child { border-top: 0; }
+  .p-row.flash { animation: flash 1.8s ease-out; }
+  .p-name {
+    flex: 1; min-width: 0; display: flex; align-items: center; gap: 8px; border: 0; background: none;
+    text-align: left; padding: 10px; cursor: pointer; border-radius: 10px;
+  }
+  .p-name:hover { background: var(--surface-2); }
+  .p-name .nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; }
+  .p-row.out .nm { color: var(--muted); }
+  .state {
+    font-size: .7rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+    padding: 4px 8px; border-radius: 999px; background: var(--out-soft); color: var(--out); flex: none;
+  }
+  .stepper { display: flex; align-items: center; gap: 2px; flex: none; background: var(--surface-2); border-radius: 999px; padding: 3px; }
+  .step {
+    width: 40px; height: 40px; border-radius: 50%; border: 0; background: var(--surface); color: var(--text);
+    font-size: 1.35rem; line-height: 1; cursor: pointer; display: grid; place-items: center;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, .1); touch-action: manipulation;
+  }
+  .step.plus { background: var(--accent); color: var(--accent-ink); }
+  .step:disabled { opacity: .35; cursor: default; box-shadow: none; }
+  .qty { min-width: 2.4ch; text-align: center; font-weight: 700; font-variant-numeric: tabular-nums; font-size: 1.05rem; }
+  .p-static { list-style: none; margin: 8px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+  .p-chip { border: 1px solid var(--line); background: var(--surface); padding: 8px 14px; border-radius: 999px; cursor: pointer; }
+  .p-chip:hover { border-color: var(--muted); }
+  .p-chip.flash { animation: flash 1.8s ease-out; }
+  .p-empty { color: var(--muted); padding: 20px 4px; margin: 0; display: flex; flex-direction: column; gap: 12px; align-items: flex-start; }
+  .kind-pick { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .kind-pick button {
+    text-align: left; border: 1px solid var(--line); background: var(--bg); border-radius: 12px;
+    padding: 12px; cursor: pointer; display: grid; gap: 4px; align-content: start;
+  }
+  .kind-pick strong { font-size: 1rem; }
+  .kind-pick span { color: var(--muted); font-size: .84rem; line-height: 1.35; }
+  .kind-pick button[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); box-shadow: inset 0 0 0 1px var(--accent); }
+  .stepper.big { display: inline-flex; }
+  .stepper.big input {
+    width: 4.2em; text-align: center; border: 0; background: transparent; font-weight: 700; font-size: 1.1rem;
+    padding: 6px; outline: none; -moz-appearance: textfield; appearance: textfield;
+  }
+  .stepper.big input::-webkit-inner-spin-button, .stepper.big input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+  .vwarn {
+    max-width: 760px; margin: 12px auto 0; background: var(--warn-soft); color: var(--warn);
+    border: 1px solid currentColor; border-radius: 12px; padding: 10px 14px; font-size: .92rem;
+  }
 
   .toast {
-    position: fixed; left: 50%; bottom: 92px; transform: translateX(-50%) translateY(20px);
-    background: var(--text); color: var(--bg); padding: 10px 16px; border-radius: 999px;
+    position: fixed; left: 50%; bottom: calc(92px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%) translateY(20px);
+    background: var(--text); color: var(--bg); padding: 10px 16px; border-radius: 999px; z-index: 20;
     opacity: 0; pointer-events: none; transition: .2s; font-size: .9rem; max-width: calc(100vw - 32px);
   }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
@@ -222,11 +346,13 @@
 <header class="top gutter">
   <div class="brand"><h1>Veras Kokbok</h1><button type="button" class="env" id="envBadge" hidden>TEST</button></div>
   <nav class="tabs" role="tablist">
-    <button class="tab" role="tab" aria-selected="true">Kategorier</button>
+    <button class="tab" role="tab" aria-selected="true" id="tabCats">Kategorier</button>
+    <button class="tab" role="tab" aria-selected="false" id="tabPantry">Ingredienser</button>
   </nav>
 </header>
+<div class="gutter"><div class="vwarn" id="versionWarn" role="alert" hidden></div></div>
 
-<main class="wrap gutter">
+<main class="wrap gutter" id="listView">
   <div class="toolbar">
     <div class="search" id="searchBox">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
@@ -241,9 +367,104 @@
   <ul class="tree" id="tree"><li class="loading" style="border:0;box-shadow:none;background:none">Laddar…</li></ul>
 </main>
 
+<main class="wrap gutter" id="pantryView" hidden>
+  <div class="toolbar">
+    <div class="search" id="pSearchBox">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <label class="sr" for="pq">Sök ingrediens</label>
+      <input id="pq" type="search" placeholder="Sök ingrediens" autocomplete="off">
+      <button class="clear" id="clearPq" aria-label="Rensa sökning">✕</button>
+    </div>
+  </div>
+  <div class="filters" role="group" aria-label="Visa">
+    <button type="button" class="chip" data-filter="all" aria-pressed="true">Alla</button>
+    <button type="button" class="chip" data-filter="have" aria-pressed="false">Hemma</button>
+    <button type="button" class="chip" data-filter="out" aria-pressed="false">Slut</button>
+  </div>
+  <section class="p-section" id="pVitalSec">
+    <h2 class="p-head">Vitala <span id="pVitalSum"></span></h2>
+    <p class="p-sub">Tryck + när du handlat och − när något tar slut.</p>
+    <ul class="p-list" id="pVital"></ul>
+  </section>
+  <section class="p-section" id="pStaticSec">
+    <h2 class="p-head">Statiska <span>finns alltid hemma</span></h2>
+    <ul class="p-static" id="pStatic"></ul>
+  </section>
+  <div class="p-empty" id="pEmpty" hidden></div>
+</main>
+
+<article class="recipe-page gutter" id="recipeView" hidden>
+  <nav class="rp-top">
+    <button type="button" class="back" id="backBtn">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 6-6 6 6 6"/></svg>
+      Kategorier
+    </button>
+    <span class="rp-crumbs" id="rpCrumbs"></span>
+  </nav>
+  <figure class="rp-hero" id="rpHero"></figure>
+  <div class="rp-head">
+    <h2 class="rp-title" id="rpTitle"></h2>
+    <button type="button" class="btn" id="rpEdit">Redigera</button>
+  </div>
+  <section class="rp-section">
+    <h3 class="rp-label" id="rpIngLabel">Ingredienser</h3>
+    <div id="rpIng"></div>
+  </section>
+  <section class="rp-section">
+    <h3 class="rp-label">Gör så här</h3>
+    <div class="prose" id="rpText"></div>
+  </section>
+</article>
+
 <button class="fab" id="addBtn" aria-label="Lägg till">
   <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
 </button>
+
+<input type="file" id="heroFile" accept="image/*" hidden>
+
+<datalist id="unitList">
+  <option value="krm"></option><option value="tsk"></option><option value="msk"></option>
+  <option value="ml"></option><option value="cl"></option><option value="dl"></option><option value="l"></option>
+  <option value="g"></option><option value="hg"></option><option value="kg"></option>
+  <option value="st"></option><option value="förp"></option><option value="paket"></option><option value="påse"></option>
+  <option value="burk"></option><option value="flaska"></option><option value="klyftor"></option><option value="skivor"></option>
+  <option value="kruka"></option><option value="knippe"></option><option value="nypa"></option><option value="näve"></option>
+</datalist>
+
+<datalist id="pantryList"></datalist>
+<datalist id="recipeIngList"></datalist>
+
+<!-- Ingrediens i skafferiet -->
+<dialog id="pantryDlg">
+  <form class="dlg" id="pantryForm" method="dialog" novalidate>
+    <header><h2 id="pTitle">Ny ingrediens</h2></header>
+    <div class="body">
+      <label class="f" for="pName">Namn</label>
+      <input type="text" id="pName" maxlength="120" list="recipeIngList" autocomplete="off" placeholder="t.ex. Grädde">
+      <label class="f">Typ</label>
+      <div class="kind-pick" id="pKind">
+        <button type="button" data-kind="vital" aria-pressed="true"><strong>Vital</strong><span>Håll koll på om den finns hemma. T.ex. grädde, kycklingfilé.</span></button>
+        <button type="button" data-kind="static" aria-pressed="false"><strong>Statisk</strong><span>Finns alltid hemma. T.ex. salt, olja.</span></button>
+      </div>
+      <div id="pQtyWrap">
+        <label class="f" for="pQty">Antal hemma nu</label>
+        <div class="stepper big">
+          <button type="button" class="step" id="pQtyMinus" aria-label="En mindre">−</button>
+          <input type="number" id="pQty" min="0" max="999" step="1" inputmode="numeric" value="1">
+          <button type="button" class="step plus" id="pQtyPlus" aria-label="En till">+</button>
+        </div>
+      </div>
+      <p class="err" id="pErr" role="alert"></p>
+    </div>
+    <footer>
+      <button type="button" class="btn danger" id="pDel" hidden>Ta bort</button>
+      <span class="spacer"></span>
+      <button type="button" class="btn" data-close>Avbryt</button>
+      <button type="button" class="btn" id="pSaveNext">Spara + ny</button>
+      <button type="submit" class="btn primary" id="pSave">Spara</button>
+    </footer>
+  </form>
+</dialog>
 
 <!-- Lägg till / redigera -->
 <dialog id="editDlg">
@@ -266,10 +487,26 @@
         <p class="note" id="parentNote"></p>
       </div>
       <div id="recipeFields">
-        <label class="f" for="fIng">Ingredienser <span style="font-weight:400">(en per rad)</span></label>
-        <textarea id="fIng" placeholder="4 dl vetemjöl&#10;2 ägg&#10;3 dl mjölk"></textarea>
-        <label class="f" for="fIns">Gör så här <span style="font-weight:400">(ett steg per rad)</span></label>
-        <textarea id="fIns" placeholder="Vispa ihop mjöl och hälften av mjölken.&#10;Tillsätt resten av mjölken och äggen."></textarea>
+        <label class="f">Bild</label>
+        <div class="img-pick">
+          <div class="img-thumb" id="fImgThumb"></div>
+          <div class="btns">
+            <button type="button" class="btn small" id="fImgPick">Välj bild</button>
+            <button type="button" class="btn small danger" id="fImgRemove" hidden>Ta bort bild</button>
+          </div>
+          <input type="file" id="fImgFile" accept="image/*" hidden>
+        </div>
+
+        <label class="f">Ingredienser</label>
+        <div class="ing-head" aria-hidden="true"><span>Mängd</span><span>Enhet</span><span>Ingrediens</span><span></span></div>
+        <div class="ing-rows" id="ingRows"></div>
+        <div class="ing-tools">
+          <button type="button" class="btn small" id="addIng">+ Ingrediens</button>
+          <span class="note" style="margin:0">Klistra in en hel lista så delas den upp i rader.</span>
+        </div>
+
+        <label class="f" for="fIns">Gör så här</label>
+        <textarea id="fIns" rows="8" placeholder="Skriv fritt hur man lagar rätten. Lämna en tom rad mellan styckena."></textarea>
       </div>
       <p class="err" id="editErr" role="alert"></p>
     </div>
@@ -280,20 +517,6 @@
       <button type="submit" class="btn primary" id="saveBtn">Spara</button>
     </footer>
   </form>
-</dialog>
-
-<!-- Visa recept -->
-<dialog id="viewDlg">
-  <div class="dlg recipe-view">
-    <header><h2 id="vTitle"></h2></header>
-    <div class="crumbs" id="vCrumbs"></div>
-    <div class="body" id="vBody"></div>
-    <footer>
-      <button type="button" class="btn" id="vEdit">Redigera</button>
-      <span class="spacer"></span>
-      <button type="button" class="btn primary" data-close>Stäng</button>
-    </footer>
-  </div>
 </dialog>
 
 <!-- Bekräfta -->
@@ -321,9 +544,12 @@
   let kids = new Map();          // parentKey -> [nodes]
   const open = new Set(loadOpen());
   let editing = false;
-  let form = null;               // { mode: 'create'|'edit', id, type: 'main'|'sub'|'recipe' }
+  let form = null;               // { mode, id, type, parentPick, image: {blob, url} | null, removeImage }
+  let currentRecipe = null;      // id för receptet som visas
+  let listScroll = 0;
 
   const $ = (s) => document.querySelector(s);
+  let baseTitle = document.title;
   const treeEl = $("#tree"), resultsEl = $("#results"), q = $("#q");
 
   const ICONS = {
@@ -333,6 +559,9 @@
     edit: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>',
     plus: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
     del: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg>',
+    x: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>',
+    plate: '<svg width="44" height="44" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="24" cy="26" r="13"/><circle cx="24" cy="26" r="7"/><path d="M5 9v9a3 3 0 0 0 3 3v18M8 9v8M11 9v9a3 3 0 0 1-3 3"/><path d="M43 9c-3 2-4 6-4 11h4v19"/></svg>',
+    image: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5-8 8"/></svg>',
   };
 
   // ---------- hjälpare
@@ -352,8 +581,64 @@
     t.textContent = msg;
     t.classList.add("show");
     clearTimeout(toast._t);
-    toast._t = setTimeout(() => t.classList.remove("show"), 2600);
+    toast._t = setTimeout(() => t.classList.remove("show"), 2800);
   }
+
+  // ---------- tolka ingrediensrader ("2 dl mjölk" -> 2 | dl | mjölk). Samma regler som i server.py
+  const UNITS = ["krm", "tsk", "msk", "ml", "cl", "dl", "l", "g", "hg", "kg", "st", "förp", "paket", "påse",
+    "burk", "flaska", "klyfta", "klyftor", "skiva", "skivor", "kruka", "knippe", "nypa", "näve",
+    "skvätt", "bit", "bitar", "port"];
+  const NUM = "(?:\\d+\\s+\\d+/\\d+|\\d+/\\d+|\\d+(?:[.,]\\d+)?(?:\\s?[½¼¾⅓⅔⅛])?|[½¼¾⅓⅔⅛])";
+  const AMOUNT_RE = new RegExp(`^\\s*(${NUM}(?:\\s*[-–]\\s*${NUM})?)(?=\\s|$)\\s*(.*)$`);
+  function parseLine(line) {
+    line = line.replace(/\t/g, " ").replace(/\s+/g, " ").trim().replace(/^[-•*\s]+/, "").trim();
+    let amount = "", unit = "", rest = line;
+    const m = line.match(AMOUNT_RE);
+    if (m && m[2]) { amount = m[1].trim(); rest = m[2]; }
+    const sp = rest.indexOf(" ");
+    if (sp > 0) {
+      const first = rest.slice(0, sp).replace(/\.$/, "").toLocaleLowerCase("sv");
+      if (UNITS.includes(first)) { unit = first; rest = rest.slice(sp + 1); }
+    }
+    return { amount: amount.slice(0, 20), unit: unit.slice(0, 20), name: rest.trim().slice(0, 120) };
+  }
+
+  // ---------- bilder: skala ner i webbläsaren innan uppladdning (mobilbilder är ofta 3-8 MB)
+  async function decodeImage(file) {
+    if (window.createImageBitmap) {
+      try { return await createImageBitmap(file, { imageOrientation: "from-image" }); } catch {}
+    }
+    return await new Promise((resolve, reject) => {
+      const url = URL.createObjectURL(file);
+      const img = new Image();
+      img.onload = () => { URL.revokeObjectURL(url); resolve(img); };
+      img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("bad")); };
+      img.src = url;
+    });
+  }
+  async function prepareImage(file) {
+    if (!file.type.startsWith("image/")) throw new Error("Välj en bildfil.");
+    let src;
+    try { src = await decodeImage(file); }
+    catch { throw new Error("Den här bilden gick inte att läsa. Prova att spara den som JPG först."); }
+    const max = preview ? 1200 : 1800;
+    const w = src.width, h = src.height;
+    const scale = Math.min(1, max / Math.max(w, h));
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.round(w * scale);
+    canvas.height = Math.round(h * scale);
+    canvas.getContext("2d").drawImage(src, 0, 0, canvas.width, canvas.height);
+    if (src.close) src.close();
+    const blob = await new Promise((r) => canvas.toBlob(r, "image/jpeg", preview ? 0.72 : 0.84));
+    if (!blob) throw new Error("Bilden gick inte att förbereda.");
+    return blob;
+  }
+  const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
+    const fr = new FileReader();
+    fr.onload = () => resolve(fr.result);
+    fr.onerror = () => reject(new Error("Bilden gick inte att läsa."));
+    fr.readAsDataURL(blob);
+  });
 
   // ---------- förhandsvisning: samma API som servern, men i webbläsaren (används när ingen server svarar)
   let preview = null;
@@ -373,14 +658,33 @@
       db = { seq: 0, nodes: [] };
       const add = (parent_id, name, is_system = false) => {
         const now = Date.now() / 1000;
-        const n = { id: ++db.seq, parent_id, type: "category", name, ingredients: "", instructions: "", is_system, created_at: now, updated_at: now };
+        const n = { id: ++db.seq, parent_id, type: "category", name, ingredients: [], instructions: "", image_url: null, is_system, created_at: now, updated_at: now };
         db.nodes.push(n);
         return n;
       };
       for (const [name, subs] of TEMPLATE) { const m = add(null, name); subs.forEach((s) => add(m.id, s)); }
       add(null, "Övrigt", true);
     }
-    const persist = () => { try { localStorage.setItem(KEY, JSON.stringify(db)); } catch {} };
+    if (!Array.isArray(db.pantry)) {
+      const PANTRY_TEMPLATE = [
+        ["Salt", "static"], ["Svartpeppar", "static"], ["Olivolja", "static"], ["Rapsolja", "static"],
+        ["Vetemjöl", "static"], ["Strösocker", "static"],
+        ["Ägg", "vital"], ["Mjölk", "vital"], ["Smör", "vital"], ["Gul lök", "vital"], ["Vitlök", "vital"],
+      ];
+      const now = Date.now() / 1000;
+      db.pantry = [];
+      db.pseq = 0;
+      for (const [name, kind] of PANTRY_TEMPLATE) db.pantry.push({ id: ++db.pseq, name, kind, quantity: 0, created_at: now, updated_at: now });
+    }
+    // migrering från v0.2 (fritext) -> rader
+    for (const n of db.nodes) {
+      if (typeof n.ingredients === "string") {
+        n.ingredients = n.ingredients.split("\n").filter((l) => l.trim()).map(parseLine).filter((r) => r.name);
+      }
+      if (!Array.isArray(n.ingredients)) n.ingredients = [];
+      if (n.image_url === undefined) n.image_url = null;
+    }
+    const persist = () => { try { localStorage.setItem(KEY, JSON.stringify(db)); return true; } catch { return false; } };
     const fail = (status, msg) => { const e = new Error(msg); e.status = status; throw e; };
     const get = (id, status = 404) => db.nodes.find((n) => n.id === id) || fail(status, "Hittade inte det du letade efter - ladda om sidan.");
     const desc = (id) => db.nodes.filter((n) => n.parent_id === id).flatMap((n) => [n.id, ...desc(n.id)]);
@@ -390,7 +694,22 @@
       if (v.length > 120) fail(400, "Namnet får vara högst 120 tecken.");
       return v;
     };
-    const cleanText = (v) => (typeof v === "string" ? v.trim() : "");
+    const cleanText = (v) => (typeof v === "string" ? v.replace(/\r\n/g, "\n").trim() : "");
+    const squash = (v) => String(v ?? "").replace(/\s+/g, " ").trim();
+    const cleanIngredients = (v) => {
+      if (v == null) return [];
+      if (!Array.isArray(v)) fail(400, "Ingredienserna har fel format.");
+      const out = [];
+      v.forEach((it, i) => {
+        const amount = squash(it.amount), unit = squash(it.unit), name = squash(it.name);
+        if (!amount && !unit && !name) return;
+        if (!name) fail(400, `Ingrediensrad ${i + 1} saknar ingrediens.`);
+        if (amount.length > 20 || unit.length > 20 || name.length > 120) fail(400, `Ingrediensrad ${i + 1} är för lång.`);
+        out.push({ amount, unit, name });
+      });
+      if (out.length > 100) fail(400, "Ett recept kan ha högst 100 ingredienser.");
+      return out;
+    };
     const parseParent = (v) => (v === null || v === undefined || v === "" ? null : Number(v));
     const checkParent = (type, pid, selfId = null) => {
       if (pid === null) { if (type === "recipe") fail(400, "Ett recept måste ligga i en kategori."); return null; }
@@ -405,14 +724,78 @@
       if (d) fail(409, `Det finns redan ${type === "recipe" ? "ett recept" : "en kategori"} som heter "${d.name}" här.`);
     };
     const copy = (o) => JSON.parse(JSON.stringify(o));
+    const pKind = (v) => (v === "vital" || v === "static" ? v : fail(400, "Välj Vital eller Statisk."));
+    const pQty = (v) => {
+      if (!Number.isInteger(v)) fail(400, "Antalet måste vara ett heltal.");
+      if (v < 0 || v > 999) fail(400, "Antalet måste vara mellan 0 och 999.");
+      return v;
+    };
+    const pDup = (name, selfId = null) => {
+      const d = db.pantry.find((x) => x.id !== selfId && x.name.toLocaleLowerCase("sv") === name.toLocaleLowerCase("sv"));
+      if (d) fail(409, `"${d.name}" finns redan bland ingredienserna.`);
+    };
 
     return {
       handle(method, url, body = {}) {
         if (url === "/api/health") return { ok: true, env: "preview" };
+        const now = Date.now() / 1000;
+
+        if (url === "/api/pantry") {
+          if (method === "GET") return { items: copy(db.pantry) };
+          if (method === "POST") {
+            const name = cleanName(body.name), kind = pKind(body.kind), quantity = pQty(body.quantity ?? 0);
+            pDup(name);
+            const it = { id: ++db.pseq, name, kind, quantity, created_at: now, updated_at: now };
+            db.pantry.push(it); persist();
+            return { item: copy(it) };
+          }
+          fail(405, "Metoden stöds inte.");
+        }
+        const pm = url.match(/^\/api\/pantry\/(\d+)(\/adjust)?$/);
+        if (pm) {
+          const pid = Number(pm[1]);
+          const it = db.pantry.find((x) => x.id === pid) || fail(404, "Hittade inte ingrediensen - ladda om sidan.");
+          if (pm[2] && method === "POST") {
+            const d = body.delta;
+            if (!Number.isInteger(d) || Math.abs(d) > 999) fail(400, "Ogiltig ändring.");
+            if (it.kind !== "vital") fail(400, "Statiska ingredienser finns alltid och har inget antal.");
+            it.quantity = Math.max(0, Math.min(999, it.quantity + d)); it.updated_at = now; persist();
+            return { item: copy(it) };
+          }
+          if (!pm[2] && method === "PUT") {
+            const name = "name" in body ? cleanName(body.name) : it.name;
+            const kind = "kind" in body ? pKind(body.kind) : it.kind;
+            const quantity = "quantity" in body ? pQty(body.quantity) : it.quantity;
+            pDup(name, pid);
+            Object.assign(it, { name, kind, quantity, updated_at: now }); persist();
+            return { item: copy(it) };
+          }
+          if (!pm[2] && method === "DELETE") {
+            db.pantry = db.pantry.filter((x) => x.id !== pid); persist();
+            return { deleted: 1 };
+          }
+          fail(405, "Metoden stöds inte.");
+        }
+
+        const im = url.match(/^\/api\/nodes\/(\d+)\/image$/);
+        if (im) {
+          const n = get(Number(im[1]));
+          if (n.type !== "recipe") fail(400, "Bara recept kan ha bild.");
+          const before = n.image_url;
+          if (method === "PUT") n.image_url = body.dataUrl;
+          else if (method === "DELETE") n.image_url = null;
+          else fail(405, "Metoden stöds inte.");
+          n.updated_at = now;
+          if (!persist()) {
+            n.image_url = before;
+            fail(507, "Förhandsvisningen har inte plats för fler bilder i den här webbläsaren. Ta bort en bild eller återställ förhandsvisningen.");
+          }
+          return { node: copy(n) };
+        }
+
         const m = url.match(/^\/api\/nodes(?:\/(\d+))?$/);
         if (!m) fail(404, "Okänd adress.");
         const id = m[1] ? Number(m[1]) : null;
-        const now = Date.now() / 1000;
 
         if (method === "GET" && id === null) return { nodes: copy(db.nodes) };
 
@@ -423,8 +806,8 @@
           checkDup(body.type, name, pid);
           const isR = body.type === "recipe";
           const n = { id: ++db.seq, parent_id: pid, type: body.type, name,
-            ingredients: isR ? cleanText(body.ingredients) : "", instructions: isR ? cleanText(body.instructions) : "",
-            is_system: false, created_at: now, updated_at: now };
+            ingredients: isR ? cleanIngredients(body.ingredients) : [], instructions: isR ? cleanText(body.instructions) : "",
+            image_url: null, is_system: false, created_at: now, updated_at: now };
           db.nodes.push(n); persist();
           return { node: copy(n) };
         }
@@ -441,9 +824,10 @@
             }
           }
           checkDup(n.type, name, pid, id);
+          const ings = n.type === "recipe" && "ingredients" in body ? cleanIngredients(body.ingredients) : null;
           Object.assign(n, { name, parent_id: pid, updated_at: now });
           if (n.type === "recipe") {
-            if ("ingredients" in body) n.ingredients = cleanText(body.ingredients);
+            if (ings) n.ingredients = ings;
             if ("instructions" in body) n.instructions = cleanText(body.instructions);
           }
           persist();
@@ -471,11 +855,14 @@
     };
   }
 
+  const APP_VERSION = "0.4.0";   // ska vara samma som VERSION i server.py
+  let serverVersion = null;
+
   async function detectBackend() {
     try {
       const res = await fetch("/api/health", { cache: "no-store" });
       const h = await res.json();
-      if (res.ok && h && h.ok === true) return h.env || "prod";
+      if (res.ok && h && h.ok === true) { serverVersion = h.version || null; return h.env || "prod"; }
     } catch {}
     preview = makePreview();
     return "preview";
@@ -494,6 +881,15 @@
     let data = {};
     try { data = await res.json(); } catch {}
     if (!res.ok) throw new Error(data.error || `Något gick fel (${res.status}).`);
+    return data;
+  }
+
+  async function uploadImage(id, blob) {
+    if (preview) return api("PUT", `/api/nodes/${id}/image`, { dataUrl: await blobToDataUrl(blob) });
+    const res = await fetch(`/api/nodes/${id}/image`, { method: "PUT", headers: { "Content-Type": blob.type || "image/jpeg" }, body: blob });
+    let data = {};
+    try { data = await res.json(); } catch {}
+    if (!res.ok) throw new Error(data.error || `Bilden kunde inte sparas (${res.status}).`);
     return data;
   }
 
@@ -537,16 +933,129 @@
       const data = await api("GET", "/api/nodes");
       nodes = data.nodes;
       index();
-      // städa bort öppna id:n som inte finns längre
       for (const id of [...open]) if (!byId.has(id)) open.delete(id);
       render();
       if (q.value.trim()) search();
+      fillDatalists();
+      route();
     } catch (e) {
       treeEl.innerHTML = `<li class="loading" style="border:0;box-shadow:none;background:none">Kunde inte ladda: ${esc(e.message)}</li>`;
     }
   }
 
-  // ---------- rendering av trädet
+  // ---------- navigering: listan eller ett recept (#recept-12)
+  let cameFromList = false;     // true = bakåt-knappen kan använda webbläsarens historik
+  function hashRecipeId() {
+    const m = location.hash.match(/^#recept-(\d+)$/);
+    return m ? Number(m[1]) : null;
+  }
+  function openRecipe(id) {
+    if (hashRecipeId() === id) return route();
+    if (currentRecipe === null) { listScroll = window.scrollY; cameFromList = true; }
+    location.hash = "recept-" + id;
+  }
+  function goToList() {
+    if (cameFromList) { cameFromList = false; history.back(); }
+    else { history.replaceState(null, "", location.pathname + location.search); route(); }
+  }
+  let currentView = "cats";
+  let catsScroll = 0;
+  function showView(view) {
+    if (currentView === "cats" && view !== "cats") catsScroll = window.scrollY;
+    $("#listView").hidden = view !== "cats";
+    $("#pantryView").hidden = view !== "pantry";
+    $("#recipeView").hidden = view !== "recipe";
+    $("#addBtn").hidden = view === "recipe";
+    $("#addBtn").setAttribute("aria-label", view === "pantry" ? "Lägg till ingrediens" : "Lägg till");
+    $("#tabCats").setAttribute("aria-selected", String(view !== "pantry"));
+    $("#tabPantry").setAttribute("aria-selected", String(view === "pantry"));
+    const changed = currentView !== view;
+    currentView = view;
+    return changed;
+  }
+  function route() {
+    const id = hashRecipeId();
+    const n = id != null ? byId.get(id) : null;
+    if (n && n.type === "recipe") {
+      const changed = currentRecipe !== id;
+      currentRecipe = id;
+      renderRecipe(n);
+      showView("recipe");
+      if (changed) window.scrollTo(0, 0);
+      return;
+    }
+    if (id != null && nodes.length) history.replaceState(null, "", location.pathname + location.search);
+    const wasRecipe = currentRecipe !== null;
+    currentRecipe = null;
+    cameFromList = false;
+    if (location.hash === "#ingredienser") {
+      document.title = `Ingredienser – ${baseTitle}`;
+      if (showView("pantry")) { window.scrollTo(0, 0); loadPantry(); }
+    } else {
+      document.title = baseTitle;
+      const wasPantry = currentView === "pantry";
+      showView("cats");
+      if (wasRecipe) window.scrollTo(0, listScroll);
+      else if (wasPantry) window.scrollTo(0, catsScroll);
+    }
+  }
+  window.addEventListener("hashchange", route);
+  $("#backBtn").addEventListener("click", goToList);
+  $("#tabCats").addEventListener("click", () => {
+    if (currentView === "recipe") goToList();
+    else if (currentView === "pantry") { history.pushState(null, "", location.pathname + location.search); route(); }
+  });
+  $("#tabPantry").addEventListener("click", () => { if (currentView !== "pantry") location.hash = "ingredienser"; });
+
+  // ---------- receptsidan
+  function paragraphs(text) {
+    return text.split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean)
+      .map((p) => `<p>${p.split("\n").map(esc).join("<br>")}</p>`).join("");
+  }
+
+  function renderRecipe(n) {
+    const path = pathOf(n.id).slice(0, -1).map((p) => p.name).join(" › ");
+    $("#rpCrumbs").textContent = path;
+    $("#rpTitle").textContent = n.name;
+    document.title = `${n.name} – ${baseTitle}`;
+
+    const hero = $("#rpHero");
+    if (n.image_url) {
+      hero.className = "rp-hero";
+      hero.innerHTML = `<img src="${esc(n.image_url)}" alt="${esc(n.name)}">`;
+    } else {
+      hero.className = "rp-hero empty";
+      hero.innerHTML = `<div class="inner">${ICONS.plate}<span>Ingen bild än</span>
+        <button type="button" class="btn small" id="heroAdd">Lägg till bild</button></div>`;
+    }
+
+    const ing = n.ingredients || [];
+    $("#rpIngLabel").innerHTML = `Ingredienser${ing.length ? ` <span>${ing.length} st</span>` : ""}`;
+    $("#rpIng").innerHTML = ing.length
+      ? `<div class="ing-card"><table class="ing-table"><tbody>${ing.map((r) => `<tr>
+          <td class="amt">${esc(r.amount)}</td><td class="unit">${esc(r.unit)}</td><td class="what">${esc(r.name)}</td></tr>`).join("")}
+         </tbody></table></div>`
+      : '<p class="blank">Inga ingredienser inlagda än.</p>';
+
+    $("#rpText").innerHTML = n.instructions ? paragraphs(n.instructions) : '<p class="blank">Ingen beskrivning inlagd än.</p>';
+  }
+
+  $("#rpEdit").addEventListener("click", () => { const n = byId.get(currentRecipe); if (n) openForm("edit", n); });
+  $("#rpHero").addEventListener("click", (e) => { if (e.target.closest("#heroAdd")) $("#heroFile").click(); });
+  $("#heroFile").addEventListener("change", async (e) => {
+    const file = e.target.files[0];
+    e.target.value = "";
+    if (!file || currentRecipe === null) return;
+    const id = currentRecipe;
+    try {
+      toast("Sparar bilden…");
+      await uploadImage(id, await prepareImage(file));
+      await load();
+      toast("Bilden är sparad");
+    } catch (err) { toast(err.message); }
+  });
+
+  // ---------- trädet
   function render() {
     treeEl.innerHTML = children(null).map(renderNode).join("") ||
       '<li class="loading" style="border:0;box-shadow:none;background:none">Inga kategorier än – tryck på + för att börja.</li>';
@@ -598,14 +1107,13 @@
         saveOpen();
         break;
       }
-      case "view": showRecipe(n); break;
+      case "view": openRecipe(id); break;
       case "edit": openForm("edit", n); break;
       case "add": openForm("create", null, n); break;
       case "del": confirmDelete(n); break;
     }
   });
 
-  // ---------- gå direkt till en nod
   function reveal(id) {
     for (const p of pathOf(id).slice(0, -1)) open.add(p.id);
     const n = byId.get(id);
@@ -682,7 +1190,7 @@
     const n = byId.get(Number(b.dataset.id));
     q.value = ""; search();
     reveal(n.id);
-    if (n.type === "recipe") showRecipe(n);
+    if (n.type === "recipe") openRecipe(n.id);
   });
 
   // ---------- redigeringsläge
@@ -699,8 +1207,9 @@
   const dlg = $("#editDlg");
   document.querySelectorAll("dialog [data-close]").forEach((b) => b.addEventListener("click", () => b.closest("dialog").close()));
   document.querySelectorAll("dialog").forEach((d) => d.addEventListener("click", (e) => { if (e.target === d) d.close(); }));
+  dlg.addEventListener("close", () => { if (form && form.image && form.image.url) URL.revokeObjectURL(form.image.url); });
 
-  $("#addBtn").addEventListener("click", () => openForm("create"));
+  $("#addBtn").addEventListener("click", () => (currentView === "pantry" ? openPantryForm("create") : openForm("create")));
   $("#typeSeg").addEventListener("click", (e) => {
     const b = e.target.closest("button[data-type]");
     if (b) setType(b.dataset.type);
@@ -709,15 +1218,15 @@
   function categoryOptions({ exclude = new Set(), includeNone = false, selected = null } = {}) {
     const opts = [];
     if (includeNone) opts.push(`<option value="">— Ingen (gör till huvudkategori) —</option>`);
-    const walk = (parentId, depth) => {
+    const walk = (parentId) => {
       for (const c of children(parentId)) {
         if (c.type !== "category" || exclude.has(c.id)) continue;
         const label = pathOf(c.id).map((p) => p.name).join(" › ");
         opts.push(`<option value="${c.id}"${c.id === selected ? " selected" : ""}>${esc(label)}</option>`);
-        walk(c.id, depth + 1);
+        walk(c.id);
       }
     };
-    walk(null, 0);
+    walk(null);
     return opts.join("");
   }
 
@@ -730,6 +1239,7 @@
     const wanted = form.parentPick ?? (node ? node.parent_id : null);
 
     $("#recipeFields").hidden = type !== "recipe";
+    dlg.classList.toggle("wide", type === "recipe");
     $("#parentWrap").hidden = false;
     sel.disabled = false;
     $("#parentNote").textContent = "";
@@ -742,25 +1252,126 @@
         if (node.is_system) $("#parentNote").textContent = "Övrigt ligger alltid på högsta nivån och går inte att flytta eller ta bort.";
       }
     } else if (type === "sub") {
-      $("#parentLabel").textContent = "Hör till kategori";
+      $("#parentLabel").textContent = form.mode === "edit" ? "Placering" : "Hör till kategori";
       sel.innerHTML = categoryOptions({ exclude, includeNone: form.mode === "edit", selected: wanted });
-      if (form.mode === "edit") $("#parentLabel").textContent = "Placering";
     } else {
       $("#parentLabel").textContent = "Kategori / underkategori";
       const fallback = wanted ?? nodes.find((n) => n.is_system)?.id ?? null;
       sel.innerHTML = categoryOptions({ selected: fallback });
       $("#parentNote").textContent = "Vet du inte var det ska ligga? Välj Övrigt och flytta det senare.";
+      if (!$("#ingRows").children.length) addIngRow();
     }
     if (node && node.is_system) sel.disabled = true;
     $("#fName").placeholder = type === "recipe" ? "t.ex. Pannkakor" : type === "sub" ? "t.ex. Grytor" : "t.ex. Huvudrätter";
   }
 
+  // ingrediensrader i formuläret
+  function addIngRow(data = { amount: "", unit: "", name: "" }, after = null, focus = false) {
+    const row = document.createElement("div");
+    row.className = "ing-row";
+    const uid = Math.random().toString(36).slice(2, 8);
+    row.innerHTML = `
+      <input type="text" class="amount" id="ia-${uid}" aria-label="Mängd" maxlength="20" placeholder="2" inputmode="decimal">
+      <input type="text" class="unit" id="iu-${uid}" aria-label="Enhet" maxlength="20" placeholder="dl" list="unitList" autocapitalize="off">
+      <input type="text" class="name" id="in-${uid}" aria-label="Ingrediens" maxlength="120" placeholder="mjölk" list="pantryList" autocomplete="off">
+      <button type="button" class="icon-btn del row-del" aria-label="Ta bort raden">${ICONS.x}</button>`;
+    row.querySelector(".amount").value = data.amount;
+    row.querySelector(".unit").value = data.unit;
+    row.querySelector(".name").value = data.name;
+    const box = $("#ingRows");
+    if (after && after.nextSibling) box.insertBefore(row, after.nextSibling); else box.appendChild(row);
+    if (focus) row.querySelector(focus === true ? ".amount" : focus).focus();
+    return row;
+  }
+  function readIngRows() {
+    return [...$("#ingRows").children].map((r) => ({
+      amount: r.querySelector(".amount").value.trim(),
+      unit: r.querySelector(".unit").value.trim(),
+      name: r.querySelector(".name").value.trim(),
+    })).filter((r) => r.amount || r.unit || r.name);
+  }
+  $("#addIng").addEventListener("click", () => addIngRow(undefined, null, true));
+  $("#ingRows").addEventListener("click", (e) => {
+    const del = e.target.closest(".row-del");
+    if (!del) return;
+    const row = del.closest(".ing-row");
+    const next = row.nextElementSibling || row.previousElementSibling;
+    row.remove();
+    if (!$("#ingRows").children.length) addIngRow(undefined, null, true);
+    else if (next) next.querySelector(".name").focus();
+  });
+  $("#ingRows").addEventListener("keydown", (e) => {
+    if (e.key !== "Enter" || !e.target.matches(".ing-row input")) return;
+    e.preventDefault();
+    const row = e.target.closest(".ing-row");
+    if (e.target.matches(".amount")) row.querySelector(".unit").focus();
+    else if (e.target.matches(".unit")) row.querySelector(".name").focus();
+    else addIngRow(undefined, row, true);
+  });
+  $("#ingRows").addEventListener("paste", (e) => {
+    const text = (e.clipboardData || window.clipboardData)?.getData("text") || "";
+    const lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+    const isList = lines.length > 1;
+    const isWholeLine = lines.length === 1 && e.target.matches(".amount") && /\s/.test(lines[0]);
+    if (!isList && !isWholeLine) return;
+    e.preventDefault();
+    let row = e.target.closest(".ing-row");
+    const parsed = lines.map(parseLine).filter((r) => r.name || r.amount);
+    const empty = !row.querySelector(".amount").value && !row.querySelector(".unit").value && !row.querySelector(".name").value;
+    parsed.forEach((p, i) => {
+      if (i === 0 && empty) {
+        row.querySelector(".amount").value = p.amount;
+        row.querySelector(".unit").value = p.unit;
+        row.querySelector(".name").value = p.name;
+      } else {
+        row = addIngRow(p, row);
+      }
+    });
+    toast(`${parsed.length} ingrediens${parsed.length === 1 ? "" : "er"} inlagd${parsed.length === 1 ? "" : "a"} – kolla att mängd och enhet hamnade rätt`);
+  });
+
+  // bild i formuläret
+  function showFormImage() {
+    const thumb = $("#fImgThumb");
+    const node = form.mode === "edit" ? byId.get(form.id) : null;
+    const url = form.image ? form.image.url : (!form.removeImage && node && node.image_url) || null;
+    thumb.style.backgroundImage = url ? `url("${url}")` : "";
+    thumb.innerHTML = url ? "" : ICONS.image;
+    $("#fImgPick").textContent = url ? "Byt bild" : "Välj bild";
+    $("#fImgRemove").hidden = !url;
+  }
+  $("#fImgPick").addEventListener("click", () => $("#fImgFile").click());
+  $("#fImgFile").addEventListener("change", async (e) => {
+    const file = e.target.files[0];
+    e.target.value = "";
+    if (!file) return;
+    try {
+      $("#fImgPick").disabled = true;
+      const blob = await prepareImage(file);
+      if (form.image && form.image.url) URL.revokeObjectURL(form.image.url);
+      form.image = { blob, url: URL.createObjectURL(blob) };
+      form.removeImage = false;
+      showFormImage();
+    } catch (err) {
+      $("#editErr").textContent = err.message;
+    } finally {
+      $("#fImgPick").disabled = false;
+    }
+  });
+  $("#fImgRemove").addEventListener("click", () => {
+    if (form.image && form.image.url) URL.revokeObjectURL(form.image.url);
+    form.image = null;
+    form.removeImage = true;
+    showFormImage();
+  });
+
   function openForm(mode, node = null, parent = null) {
-    form = { mode, id: node?.id ?? null, type: "main", parentPick: parent?.id ?? null };
+    form = { mode, id: node?.id ?? null, type: "main", parentPick: parent?.id ?? null, image: null, removeImage: false };
     $("#editErr").textContent = "";
     $("#fName").value = node?.name ?? "";
-    $("#fIng").value = node?.ingredients ?? "";
     $("#fIns").value = node?.instructions ?? "";
+    $("#ingRows").innerHTML = "";
+    (node?.ingredients || []).forEach((r) => addIngRow(r));
     $("#typeWrap").hidden = mode === "edit";
     $("#delInDlg").hidden = !(mode === "edit" && !node.is_system);
 
@@ -771,11 +1382,12 @@
     $("#editTitle").textContent = mode === "create" ? (parent ? `Lägg till i ${parent.name}` : "Lägg till")
       : node.type === "recipe" ? "Redigera recept" : "Redigera kategori";
     setType(type);
+    showFormImage();
     dlg.showModal();
     setTimeout(() => $("#fName").focus(), 30);
   }
 
-  // Byt mellan underkategori/recept när man lägger till "här" i en kategori: behåll vald förälder
+  // Behåll vald förälder om man byter mellan underkategori/recept
   $("#fParent").addEventListener("change", () => { form.parentPick = $("#fParent").value ? Number($("#fParent").value) : null; });
 
   $("#editForm").addEventListener("submit", async (e) => {
@@ -788,12 +1400,22 @@
       return;
     }
     const body = { name };
-    if (form.type === "recipe") { body.ingredients = $("#fIng").value; body.instructions = $("#fIns").value; }
+    if (form.type === "recipe") {
+      body.ingredients = readIngRows();
+      const missing = body.ingredients.findIndex((r) => !r.name);
+      if (missing !== -1) {
+        $("#editErr").textContent = `Ingrediensrad ${missing + 1} saknar ingrediens.`;
+        [...$("#ingRows").children].filter((r) => r.querySelector(".amount").value.trim() || r.querySelector(".unit").value.trim() || r.querySelector(".name").value.trim())[missing]?.querySelector(".name").focus();
+        return;
+      }
+      body.instructions = $("#fIns").value;
+    }
     const btn = $("#saveBtn");
     btn.disabled = true;
+    const wasCreate = form.mode === "create";
     try {
       let saved;
-      if (form.mode === "create") {
+      if (wasCreate) {
         body.type = form.type === "recipe" ? "recipe" : "category";
         body.parent_id = form.type === "main" ? null : parentVal;
         saved = (await api("POST", "/api/nodes", body)).node;
@@ -802,10 +1424,23 @@
         if (!node.is_system) body.parent_id = parentVal;
         saved = (await api("PUT", `/api/nodes/${form.id}`, body)).node;
       }
+      let imageError = null;
+      if (saved.type === "recipe") {
+        try {
+          if (form.image) await uploadImage(saved.id, form.image.blob);
+          else if (form.removeImage) await api("DELETE", `/api/nodes/${saved.id}/image`);
+        } catch (err) { imageError = err.message; }
+      }
       dlg.close();
       await load();
-      reveal(saved.id);
-      toast(form.mode === "create" ? `"${saved.name}" har lagts till` : "Ändringen är sparad");
+      if (saved.type === "recipe" && (wasCreate || currentRecipe === saved.id)) {
+        reveal(saved.id);
+        openRecipe(saved.id);
+      } else if (currentRecipe === null) {
+        reveal(saved.id);
+      }
+      toast(imageError ? `Receptet är sparat, men inte bilden: ${imageError}`
+        : wasCreate ? `"${saved.name}" har lagts till` : "Ändringen är sparad");
     } catch (err) {
       $("#editErr").textContent = err.message;
     } finally {
@@ -830,7 +1465,7 @@
     $("#cOk").textContent = "Ta bort";
     $("#cTitle").textContent = `Ta bort "${n.name}"?`;
     if (n.type === "recipe") {
-      $("#cText").textContent = "Receptet tas bort permanent.";
+      $("#cText").textContent = "Receptet och dess bild tas bort permanent.";
     } else {
       const d = descendants(n.id);
       const subs = d.filter((x) => x.type === "category").length;
@@ -844,29 +1479,231 @@
       try {
         const r = await api("DELETE", `/api/nodes/${n.id}`);
         c.close();
+        const leaving = currentRecipe === n.id;
         await load();
+        if (leaving) goToList();
         toast(r.moved_recipes ? `Borttagen – ${r.moved_recipes} recept flyttade till Övrigt` : "Borttagen");
       } catch (err) { c.close(); toast(err.message); }
     };
     c.showModal();
   }
 
-  // ---------- visa recept
-  let viewing = null;
-  function showRecipe(n) {
-    viewing = n;
-    $("#vTitle").textContent = n.name;
-    $("#vCrumbs").textContent = pathOf(n.id).slice(0, -1).map((p) => p.name).join(" › ");
-    const lines = (s) => s.split("\n").map((l) => l.trim()).filter(Boolean);
-    const ing = lines(n.ingredients), ins = lines(n.instructions);
-    $("#vBody").innerHTML = `
-      <h3>Ingredienser</h3>
-      ${ing.length ? `<ul>${ing.map((l) => `<li>${esc(l)}</li>`).join("")}</ul>` : '<p class="blank">Inga ingredienser inlagda än.</p>'}
-      <h3>Gör så här</h3>
-      ${ins.length ? `<ol>${ins.map((l) => `<li>${esc(l)}</li>`).join("")}</ol>` : '<p class="blank">Inga instruktioner inlagda än.</p>'}`;
-    $("#viewDlg").showModal();
+  // ---------- ingredienser (skafferi)
+  let pantry = [];
+  let pantryLoaded = false;
+  let pFilter = "all";
+  let pForm = null;                 // { mode: 'create'|'edit', id, kind }
+  const pPending = new Map();       // id -> antal +/- som väntar på svar
+  const pq = $("#pq");
+
+  async function loadPantry() {
+    try {
+      pantry = (await api("GET", "/api/pantry")).items;
+      pantryLoaded = true;
+    } catch (e) {
+      $("#pVitalSec").hidden = $("#pStaticSec").hidden = true;
+      $("#pEmpty").hidden = false;
+      $("#pEmpty").textContent = "Kunde inte ladda ingredienserna: " + e.message;
+      return;
+    }
+    renderPantry();
+    fillDatalists();
   }
-  $("#vEdit").addEventListener("click", () => { $("#viewDlg").close(); openForm("edit", byId.get(viewing.id)); });
+
+  function fillDatalists() {
+    const have = new Set(pantry.map((x) => norm(x.name)));
+    $("#pantryList").innerHTML = [...pantry].sort((a, b) => coll.compare(a.name, b.name))
+      .map((x) => `<option value="${esc(x.name)}"></option>`).join("");
+    // förslag när man lägger till i skafferiet: ingredienser som används i recept men saknas här
+    const fromRecipes = new Map();
+    for (const n of nodes) {
+      if (n.type !== "recipe") continue;
+      for (const r of n.ingredients || []) {
+        const k = norm(r.name);
+        if (!have.has(k) && !fromRecipes.has(k)) fromRecipes.set(k, r.name);
+      }
+    }
+    $("#recipeIngList").innerHTML = [...fromRecipes.values()].sort(coll.compare)
+      .map((v) => `<option value="${esc(v)}"></option>`).join("");
+  }
+
+  const vitalRow = (x) => `<li class="p-row${x.quantity ? "" : " out"}" data-id="${x.id}">
+      <button type="button" class="p-name" data-act="edit" title="Redigera"><span class="nm">${esc(x.name)}</span>${x.quantity ? "" : '<span class="state">Slut</span>'}</button>
+      <div class="stepper">
+        <button type="button" class="step" data-act="minus" aria-label="En mindre ${esc(x.name)}"${x.quantity ? "" : " disabled"}>−</button>
+        <span class="qty" aria-live="polite">${x.quantity}</span>
+        <button type="button" class="step plus" data-act="plus" aria-label="En till ${esc(x.name)}">+</button>
+      </div></li>`;
+
+  function updateSummary() {
+    const vital = pantry.filter((x) => x.kind === "vital");
+    const home = vital.filter((x) => x.quantity > 0).length;
+    $("#pVitalSum").textContent = vital.length ? `${home} hemma · ${vital.length - home} slut` : "";
+  }
+
+  function renderPantry() {
+    const raw = pq.value.trim();
+    const term = norm(raw);
+    $("#pSearchBox").classList.toggle("has-text", !!pq.value);
+    const sorted = [...pantry].sort((a, b) => coll.compare(a.name, b.name));
+    const match = (x) => !term || norm(x.name).includes(term);
+    const vShow = sorted.filter((x) => x.kind === "vital" && match(x) &&
+      (pFilter === "all" || (pFilter === "have" ? x.quantity > 0 : x.quantity === 0)));
+    const sShow = pFilter === "out" ? [] : sorted.filter((x) => x.kind === "static" && match(x));
+    $("#pVital").innerHTML = vShow.map(vitalRow).join("");
+    $("#pStatic").innerHTML = sShow.map((x) =>
+      `<li data-id="${x.id}"><button type="button" class="p-chip" data-act="edit" title="Redigera">${esc(x.name)}</button></li>`).join("");
+    $("#pVitalSec").hidden = !vShow.length;
+    $("#pStaticSec").hidden = !sShow.length;
+    updateSummary();
+    const empty = !vShow.length && !sShow.length;
+    $("#pEmpty").hidden = !empty;
+    if (!empty) return;
+    if (!pantry.length) $("#pEmpty").innerHTML = "Inga ingredienser än. Tryck på + för att lägga till den första.";
+    else if (term) $("#pEmpty").innerHTML = `<span>Ingen ingrediens matchar "${esc(raw)}".</span>
+      <button type="button" class="btn small" id="pAddFromSearch">Lägg till "${esc(raw)}"</button>`;
+    else if (pFilter === "out") $("#pEmpty").innerHTML = "Inget är slut just nu.";
+    else $("#pEmpty").innerHTML = "Inget hemma just nu. Tryck + på det du har.";
+  }
+
+  function updateRow(x) {
+    const li = $("#pVital").querySelector(`li[data-id="${x.id}"]`);
+    if (li) {
+      li.classList.toggle("out", !x.quantity);
+      li.querySelector(".qty").textContent = x.quantity;
+      li.querySelector('[data-act="minus"]').disabled = !x.quantity;
+      const st = li.querySelector(".state");
+      if (!x.quantity && !st) li.querySelector(".p-name").insertAdjacentHTML("beforeend", '<span class="state">Slut</span>');
+      if (x.quantity && st) st.remove();
+    }
+    updateSummary();
+  }
+
+  function flashPantry(id) {
+    const el = $("#pantryView").querySelector(`[data-id="${id}"]`);
+    if (!el) return;
+    const target = el.querySelector(".p-chip") || el;
+    target.scrollIntoView({ behavior: "smooth", block: "center" });
+    target.classList.remove("flash"); void target.offsetWidth; target.classList.add("flash");
+  }
+
+  async function adjust(x, delta) {
+    const before = x.quantity;
+    const next = Math.max(0, Math.min(999, before + delta));
+    if (next === before) return;
+    x.quantity = next;                       // visa direkt, rätta efter svaret
+    updateRow(x);
+    pPending.set(x.id, (pPending.get(x.id) || 0) + 1);
+    let latest = null, failed = null;
+    try { latest = (await api("POST", `/api/pantry/${x.id}/adjust`, { delta })).item; }
+    catch (err) { failed = err; }
+    const left = pPending.get(x.id) - 1;
+    pPending.set(x.id, left);
+    if (failed) { toast(failed.message); if (!left) loadPantry(); return; }
+    if (!left && latest) { Object.assign(x, latest); updateRow(x); }
+  }
+
+  pq.addEventListener("input", renderPantry);
+  pq.addEventListener("keydown", (e) => { if (e.key === "Escape") { pq.value = ""; renderPantry(); } });
+  $("#clearPq").addEventListener("click", () => { pq.value = ""; renderPantry(); pq.focus(); });
+
+  $("#pantryView").addEventListener("click", (e) => {
+    if (e.target.closest("#pAddFromSearch")) return openPantryForm("create", null, pq.value.trim());
+    const f = e.target.closest("[data-filter]");
+    if (f) {
+      pFilter = f.dataset.filter;
+      document.querySelectorAll("[data-filter]").forEach((b) => b.setAttribute("aria-pressed", String(b === f)));
+      return renderPantry();
+    }
+    const btn = e.target.closest("[data-act]");
+    if (!btn) return;
+    const x = pantry.find((it) => it.id === Number(btn.closest("[data-id]").dataset.id));
+    if (!x) return;
+    if (btn.dataset.act === "edit") return openPantryForm("edit", x);
+    adjust(x, btn.dataset.act === "plus" ? 1 : -1);
+  });
+
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible" && currentView === "pantry" && ![...pPending.values()].some(Boolean)) loadPantry();
+  });
+
+  // formuläret
+  const pDlg = $("#pantryDlg");
+  const clampQty = (v) => Math.max(0, Math.min(999, Number.isFinite(v) ? Math.trunc(v) : 0));
+  function setKind(kind) {
+    pForm.kind = kind;
+    document.querySelectorAll("#pKind button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.kind === kind)));
+    $("#pQtyWrap").hidden = kind !== "vital";
+  }
+  function openPantryForm(mode, x = null, name = "") {
+    pForm = { mode, id: x ? x.id : null, kind: x ? x.kind : "vital" };
+    $("#pTitle").textContent = mode === "create" ? "Ny ingrediens" : "Redigera ingrediens";
+    $("#pName").value = x ? x.name : name;
+    $("#pQty").value = x ? x.quantity : 1;
+    $("#pErr").textContent = "";
+    $("#pDel").hidden = mode !== "edit";
+    $("#pSaveNext").hidden = mode !== "create";
+    setKind(pForm.kind);
+    pDlg.showModal();
+    setTimeout(() => $("#pName").focus(), 30);
+  }
+  $("#pKind").addEventListener("click", (e) => { const b = e.target.closest("[data-kind]"); if (b) setKind(b.dataset.kind); });
+  $("#pQtyMinus").addEventListener("click", () => { $("#pQty").value = clampQty(Number($("#pQty").value) - 1); });
+  $("#pQtyPlus").addEventListener("click", () => { $("#pQty").value = clampQty(Number($("#pQty").value) + 1); });
+
+  async function savePantry(another) {
+    const name = $("#pName").value.trim();
+    if (!name) { $("#pErr").textContent = "Skriv vad ingrediensen heter."; $("#pName").focus(); return; }
+    const body = { name, kind: pForm.kind };
+    if (pForm.kind === "vital") body.quantity = clampQty(Number($("#pQty").value));
+    const btns = [$("#pSave"), $("#pSaveNext")];
+    btns.forEach((b) => (b.disabled = true));
+    try {
+      const wasCreate = pForm.mode === "create";
+      const saved = wasCreate
+        ? (await api("POST", "/api/pantry", body)).item
+        : (await api("PUT", `/api/pantry/${pForm.id}`, body)).item;
+      if (wasCreate) {
+        pq.value = "";
+        pFilter = "all";
+        document.querySelectorAll("[data-filter]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.filter === "all")));
+      }
+      await loadPantry();
+      toast(wasCreate ? `"${saved.name}" har lagts till` : "Ändringen är sparad");
+      if (another) {
+        const kind = pForm.kind;
+        pForm = { mode: "create", id: null, kind };
+        $("#pName").value = "";
+        $("#pQty").value = 1;
+        $("#pErr").textContent = "";
+        $("#pName").focus();
+      } else {
+        pDlg.close();
+        flashPantry(saved.id);
+      }
+    } catch (err) {
+      $("#pErr").textContent = err.message;
+    } finally {
+      btns.forEach((b) => (b.disabled = false));
+    }
+  }
+  $("#pantryForm").addEventListener("submit", (e) => { e.preventDefault(); savePantry(false); });
+  $("#pSaveNext").addEventListener("click", () => savePantry(true));
+  $("#pName").addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && pForm && pForm.mode === "create") { e.preventDefault(); savePantry(true); }
+  });
+  $("#pDel").addEventListener("click", () => {
+    const x = pantry.find((it) => it.id === pForm.id);
+    if (!x) return;
+    pDlg.close();
+    askConfirm(`Ta bort "${x.name}"?`, "Ingrediensen tas bort från listan. Recepten påverkas inte.", "Ta bort", async () => {
+      try {
+        await api("DELETE", `/api/pantry/${x.id}`);
+        await loadPantry();
+        toast(`"${x.name}" är borttagen`);
+      } catch (err) { toast(err.message); }
+    });
+  });
 
   detectBackend().then((env) => {
     if (env === "preview") {
@@ -876,15 +1713,22 @@
       b.title = "Datan sparas bara i den här webbläsaren. Klicka för att återställa till startmallen.";
       b.style.cursor = "pointer";
       b.hidden = false;
+      baseTitle = "Förhandsvisning – Veras Kokbok";
+      document.title = baseTitle;
       b.addEventListener("click", () => askConfirm(
         "Återställa förhandsvisningen?",
         "Allt du har lagt till i förhandsvisningen tas bort och startmallen läggs tillbaka. Den riktiga kokboken påverkas inte.",
         "Återställ",
-        () => { preview.reset(); preview = makePreview(); load(); toast("Förhandsvisningen är återställd"); }
+        () => { preview.reset(); preview = makePreview(); load(); loadPantry(); toast("Förhandsvisningen är återställd"); }
       ));
-      document.title = "Förhandsvisning – Veras Kokbok";
+    } else if (serverVersion !== APP_VERSION) {
+      const w = $("#versionWarn");
+      w.textContent = `Sidan är version ${APP_VERSION} men servern är ${serverVersion ? "version " + serverVersion : "en äldre version"}. ` +
+        "Kontrollera att server.py och static/index.html kommer från samma version och starta om tjänsten.";
+      w.hidden = false;
     }
     load();
+    loadPantry();
   });
 })();
 </script>

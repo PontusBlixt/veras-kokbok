@@ -24,7 +24,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlparse
 
-VERSION = "0.3.1"
+VERSION = "0.4.0"
 
 BASE_DIR = Path(__file__).resolve().parent
 STATIC_DIR = (BASE_DIR / "static").resolve()
@@ -41,6 +41,8 @@ MAX_INGREDIENTS = 100
 MAX_AMOUNT = 20
 MAX_UNIT = 20
 MAX_IMAGE_BYTES = 8 * 1024 * 1024
+MAX_QUANTITY = 999
+PANTRY_KINDS = ("vital", "static")
 OVRIGT_NAME = "Övrigt"
 
 # Startmall - skapas bara första gången databasen skapas. Allt här går att ta bort.
@@ -54,6 +56,13 @@ TEMPLATE = [
     ("Bakning", ["Bröd", "Kakor & småkakor", "Tårtor & långpannor"]),
     ("Efterrätter", []),
     ("Drycker", []),
+]
+
+# Startmall för skafferiet - skapas en gång (v0.4.0). Allt går att ta bort.
+PANTRY_TEMPLATE = [
+    ("Salt", "static"), ("Svartpeppar", "static"), ("Olivolja", "static"), ("Rapsolja", "static"),
+    ("Vetemjöl", "static"), ("Strösocker", "static"),
+    ("Ägg", "vital"), ("Mjölk", "vital"), ("Smör", "vital"), ("Gul lök", "vital"), ("Vitlök", "vital"),
 ]
 
 # Enheter som känns igen när en ingrediensrad tolkas ("2 dl mjölk" -> 2 | dl | mjölk).
@@ -87,6 +96,14 @@ CREATE TABLE IF NOT EXISTS ingredients (
     name       TEXT NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_ingredients_recipe ON ingredients(recipe_id, position);
+CREATE TABLE IF NOT EXISTS pantry (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    name       TEXT NOT NULL,
+    kind       TEXT NOT NULL CHECK (kind IN ('vital', 'static')),
+    quantity   INTEGER NOT NULL DEFAULT 0,
+    created_at REAL NOT NULL,
+    updated_at REAL NOT NULL
+);
 """
 
 INSERT_SQL = (
@@ -155,6 +172,14 @@ def init_db():
             if not conn.execute("SELECT 1 FROM nodes WHERE is_system = 1").fetchone():
                 conn.execute(INSERT_SQL, (None, "category", OVRIGT_NAME, "", 1, now, now))
             migrate_ingredients(conn)
+            if not conn.execute("SELECT 1 FROM meta WHERE key = 'pantry_seeded'").fetchone():
+                if not conn.execute("SELECT 1 FROM pantry").fetchone():
+                    for name, kind in PANTRY_TEMPLATE:
+                        conn.execute(
+                            "INSERT INTO pantry (name, kind, quantity, created_at, updated_at) VALUES (?, ?, 0, ?, ?)",
+                            (name, kind, now, now),
+                        )
+                conn.execute("INSERT INTO meta (key, value) VALUES ('pantry_seeded', '1')")
     finally:
         conn.close()
 
@@ -399,6 +424,96 @@ def delete_node(conn, ctx, node_id):
     return {"deleted_categories": deleted, "deleted_recipes": 0, "moved_recipes": moved}
 
 
+# ---------------------------------------------------------------- skafferi
+
+def pantry_dict(row):
+    return {
+        "id": row["id"],
+        "name": row["name"],
+        "kind": row["kind"],
+        "quantity": row["quantity"],
+        "created_at": row["created_at"],
+        "updated_at": row["updated_at"],
+    }
+
+
+def get_pantry(conn, item_id):
+    row = conn.execute("SELECT * FROM pantry WHERE id = ?", (item_id,)).fetchone()
+    if not row:
+        raise ApiError(404, "Hittade inte ingrediensen - ladda om sidan.")
+    return row
+
+
+def clean_kind(value):
+    if value not in PANTRY_KINDS:
+        raise ApiError(400, "Välj Vital eller Statisk.")
+    return value
+
+
+def clean_quantity(value):
+    if isinstance(value, bool) or not isinstance(value, (int, float)) or value != int(value):
+        raise ApiError(400, "Antalet måste vara ett heltal.")
+    value = int(value)
+    if not 0 <= value <= MAX_QUANTITY:
+        raise ApiError(400, f"Antalet måste vara mellan 0 och {MAX_QUANTITY}.")
+    return value
+
+
+def check_pantry_duplicate(conn, name, item_id=None):
+    for r in conn.execute("SELECT id, name FROM pantry"):
+        if r["id"] != item_id and r["name"].casefold() == name.casefold():
+            raise ApiError(409, f"\"{r['name']}\" finns redan bland ingredienserna.")
+
+
+def list_pantry(conn):
+    return [pantry_dict(r) for r in conn.execute("SELECT * FROM pantry ORDER BY name COLLATE NOCASE")]
+
+
+def create_pantry(conn, ctx, data):
+    name = clean_name(data.get("name"))
+    kind = clean_kind(data.get("kind"))
+    quantity = clean_quantity(data.get("quantity", 0))
+    check_pantry_duplicate(conn, name)
+    now = time.time()
+    cur = conn.execute(
+        "INSERT INTO pantry (name, kind, quantity, created_at, updated_at) VALUES (?, ?, ?, ?, ?)",
+        (name, kind, quantity, now, now),
+    )
+    return {"item": pantry_dict(get_pantry(conn, cur.lastrowid))}
+
+
+def update_pantry(conn, ctx, item_id, data):
+    row = get_pantry(conn, item_id)
+    name = clean_name(data["name"]) if "name" in data else row["name"]
+    kind = clean_kind(data["kind"]) if "kind" in data else row["kind"]
+    quantity = clean_quantity(data["quantity"]) if "quantity" in data else row["quantity"]
+    check_pantry_duplicate(conn, name, item_id)
+    conn.execute(
+        "UPDATE pantry SET name = ?, kind = ?, quantity = ?, updated_at = ? WHERE id = ?",
+        (name, kind, quantity, time.time(), item_id),
+    )
+    return {"item": pantry_dict(get_pantry(conn, item_id))}
+
+
+def adjust_pantry(conn, ctx, item_id, data):
+    """+1 / -1 räknas på servern, så att två telefoner som trycker samtidigt inte skriver över varandra."""
+    row = get_pantry(conn, item_id)
+    delta = data.get("delta")
+    if isinstance(delta, bool) or not isinstance(delta, int) or not -MAX_QUANTITY <= delta <= MAX_QUANTITY:
+        raise ApiError(400, "Ogiltig ändring.")
+    if row["kind"] != "vital":
+        raise ApiError(400, "Statiska ingredienser finns alltid och har inget antal.")
+    quantity = max(0, min(MAX_QUANTITY, row["quantity"] + delta))
+    conn.execute("UPDATE pantry SET quantity = ?, updated_at = ? WHERE id = ?", (quantity, time.time(), item_id))
+    return {"item": pantry_dict(get_pantry(conn, item_id))}
+
+
+def delete_pantry(conn, ctx, item_id):
+    get_pantry(conn, item_id)
+    conn.execute("DELETE FROM pantry WHERE id = ?", (item_id,))
+    return {"deleted": 1}
+
+
 def sniff_image(data):
     if data[:3] == b"\xff\xd8\xff":
         return "jpg"
@@ -528,6 +643,29 @@ class Handler(BaseHTTPRequestHandler):
     def handle_api(self, method, path):
         if path == "/api/health":
             return self.send_json(200, {"ok": True, "env": ENV, "version": VERSION})
+
+        if re.fullmatch(r"/api/pantry/?", path):
+            if method == "GET":
+                conn = connect()
+                try:
+                    return self.send_json(200, {"items": list_pantry(conn)})
+                finally:
+                    conn.close()
+            if method == "POST":
+                return self.send_json(201, self.run_write(create_pantry, self.read_json()))
+            raise ApiError(405, "Metoden stöds inte.")
+
+        m = re.fullmatch(r"/api/pantry/(\d+)(/adjust)?/?", path)
+        if m:
+            item_id = int(m.group(1))
+            if m.group(2):
+                if method == "POST":
+                    return self.send_json(200, self.run_write(adjust_pantry, item_id, self.read_json()))
+            elif method == "PUT":
+                return self.send_json(200, self.run_write(update_pantry, item_id, self.read_json()))
+            elif method == "DELETE":
+                return self.send_json(200, self.run_write(delete_pantry, item_id))
+            raise ApiError(405, "Metoden stöds inte.")
 
         m = re.fullmatch(r"/api/nodes/(\d+)/image/?", path)
         if m:

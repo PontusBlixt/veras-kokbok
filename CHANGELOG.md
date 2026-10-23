@@ -1,5 +1,13 @@
 # Ändringslogg
 
+## v0.4.0 – 2026-10-21
+- Ny flik **Ingredienser** (skafferi): varje ingrediens läggs in en gång som **Vital** (antal med +/−, 0 = Slut) eller **Statisk** (finns alltid)
+- Filter Alla / Hemma / Slut, sök, "Spara + ny" för att lägga in många i rad
+- Startmall: 6 statiska (salt, peppar, oljor, mjöl, socker) och 5 vitala (ägg, mjölk, smör, gul lök, vitlök). Allt går att ta bort
+- +/− räknas på servern så att två telefoner inte skriver över varandra
+- Förslag: skafferiet föreslår namn från recepten, och receptformuläret föreslår namn från skafferiet
+- Versionsvarning om `server.py` och `static/index.html` inte matchar
+
 ## v0.3.1 – 2026-10-21
 - Kan lyssna på fler adresser via `KOKBOK_LAN`, t.ex. `192.168.1.20:8443`, så att appen nås på hemnätet (`http://server.home:8443`) utan Tailscale
 - Försöker igen var 30:e sekund om LAN-adressen inte finns än, i stället för att stoppa appen

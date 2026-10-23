@@ -27,6 +27,8 @@
     --env-ink: #ffffff;
     --out: #9a4a1c;         /* slut */
     --out-soft: #f8e6d9;
+    --have: #2f6b4f;        /* finns hemma */
+    --have-soft: #dcebe1;
     --warn: #7a5200;
     --warn-soft: #fff3d1;
     --shadow: 0 1px 2px rgba(20, 40, 30, .06), 0 4px 14px rgba(20, 40, 30, .06);
@@ -39,7 +41,7 @@
       --bg: #131915; --surface: #1b231e; --surface-2: #232d27; --text: #e5ece6; --muted: #98a69d;
       --line: #2c3730; --accent: #7cc49a; --accent-ink: #0f1712; --accent-soft: #23392c; --danger: #f2867d;
       --hit: #4f4714; --env: #6ea0ff; --env-ink: #0d1422;
-      --out: #f0a978; --out-soft: #3a2619; --warn: #f2c56b; --warn-soft: #362c12;
+      --out: #f0a978; --out-soft: #3a2619; --have: #7cc49a; --have-soft: #23392c; --warn: #f2c56b; --warn-soft: #362c12;
       --shadow: 0 1px 2px rgba(0,0,0,.3), 0 4px 14px rgba(0,0,0,.25);
       color-scheme: dark;
     }
@@ -48,7 +50,7 @@
     --bg: #131915; --surface: #1b231e; --surface-2: #232d27; --text: #e5ece6; --muted: #98a69d;
     --line: #2c3730; --accent: #7cc49a; --accent-ink: #0f1712; --accent-soft: #23392c; --danger: #f2867d;
     --hit: #4f4714; --env: #6ea0ff; --env-ink: #0d1422;
-      --out: #f0a978; --out-soft: #3a2619; --warn: #f2c56b; --warn-soft: #362c12;
+      --out: #f0a978; --out-soft: #3a2619; --have: #7cc49a; --have-soft: #23392c; --warn: #f2c56b; --warn-soft: #362c12;
     --shadow: 0 1px 2px rgba(0,0,0,.3), 0 4px 14px rgba(0,0,0,.25);
     color-scheme: dark;
   }
@@ -325,6 +327,56 @@
     padding: 6px; outline: none; -moz-appearance: textfield; appearance: textfield;
   }
   .stepper.big input::-webkit-inner-spin-button, .stepper.big input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+  /* laga: vad kan jag laga? */
+  .cook-top { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 16px 0 6px; }
+  .cook-title { font: 700 1.5rem/1.15 var(--display); margin: 0; flex: 1; min-width: 12ch; text-wrap: balance; }
+  .cook-top select {
+    padding: 9px 12px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface);
+    max-width: 100%; min-width: 0;
+  }
+  .cook-sum { color: var(--muted); margin: 0 0 18px; }
+  .cook-sec { margin-bottom: 26px; }
+  .cook-sec > summary { list-style: none; cursor: pointer; }
+  .cook-sec > summary::-webkit-details-marker { display: none; }
+  .cook-sec > summary .p-head::before { content: "▸"; color: var(--muted); font-size: .9em; width: 1em; }
+  .cook-sec[open] > summary .p-head::before { content: "▾"; }
+  .cook-list { display: grid; gap: 8px; margin-top: 10px; }
+  .cc {
+    display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 12px; align-items: start;
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    box-shadow: var(--shadow); padding: 10px; cursor: pointer;
+  }
+  .cc:hover { border-color: var(--muted); }
+  .cc-thumb {
+    width: 64px; height: 64px; border-radius: 10px; background: var(--surface-2) center / cover no-repeat;
+    display: grid; place-items: center; color: var(--muted);
+  }
+  .cc-thumb svg { width: 30px; height: 30px; }
+  .cc-body { min-width: 0; display: grid; gap: 4px; }
+  .cc-open {
+    border: 0; background: none; padding: 0; text-align: left; cursor: pointer;
+    font: 600 1.02rem/1.3 var(--font); color: var(--text);
+  }
+  .cc-path { color: var(--muted); font-size: .82rem; }
+  .cc-ings { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+  .tag { font-size: .8rem; padding: 3px 9px; border-radius: 999px; display: inline-flex; align-items: center; gap: 4px; }
+  .tag.have { background: var(--have-soft); color: var(--have); }
+  .tag.miss { background: var(--out-soft); color: var(--out); font-weight: 600; }
+  .cc-unk { color: var(--muted); font-size: .82rem; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; margin-top: 2px; }
+  .linkbtn {
+    border: 0; background: none; padding: 2px 0; color: var(--accent); font-weight: 600; cursor: pointer;
+    text-decoration: underline; text-underline-offset: 2px; font-size: inherit;
+  }
+  .cook-empty { color: var(--muted); padding: 8px 2px; margin: 0; }
+
+  /* receptsidan: vad som finns hemma */
+  .rp-have { margin: 0 0 10px; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: .92rem; }
+  .rp-have.ok { color: var(--have); font-weight: 600; }
+  .rp-have.muted { color: var(--muted); }
+  .ing-table .st { width: 1%; white-space: nowrap; text-align: right; padding-left: 0; }
+  .ing-table tr.miss .what { color: var(--out); font-weight: 600; }
+  .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--have); }
+
   .vwarn {
     max-width: 760px; margin: 12px auto 0; background: var(--warn-soft); color: var(--warn);
     border: 1px solid currentColor; border-radius: 12px; padding: 10px 14px; font-size: .92rem;
@@ -348,6 +400,7 @@
   <nav class="tabs" role="tablist">
     <button class="tab" role="tab" aria-selected="true" id="tabCats">Kategorier</button>
     <button class="tab" role="tab" aria-selected="false" id="tabPantry">Ingredienser</button>
+    <button class="tab" role="tab" aria-selected="false" id="tabCook">Laga</button>
   </nav>
 </header>
 <div class="gutter"><div class="vwarn" id="versionWarn" role="alert" hidden></div></div>
@@ -393,11 +446,38 @@
   <div class="p-empty" id="pEmpty" hidden></div>
 </main>
 
+<main class="wrap gutter" id="cookView" hidden>
+  <div class="cook-top">
+    <h2 class="cook-title">Vad kan jag laga?</h2>
+    <label class="sr" for="cookCat">Visa kategori</label>
+    <select id="cookCat"><option value="">Alla kategorier</option></select>
+  </div>
+  <p class="cook-sum" id="cookSum"></p>
+  <section class="cook-sec" id="cookReady">
+    <h2 class="p-head">Kan lagas nu <span></span></h2>
+    <div class="cook-list"></div>
+  </section>
+  <section class="cook-sec" id="cookOne">
+    <h2 class="p-head">Saknar en sak <span></span></h2>
+    <div class="cook-list"></div>
+  </section>
+  <details class="cook-sec" id="cookMore">
+    <summary><h2 class="p-head">Saknar fler <span></span></h2></summary>
+    <div class="cook-list"></div>
+  </details>
+  <details class="cook-sec" id="cookSetup">
+    <summary><h2 class="p-head">Okänt <span></span></h2></summary>
+    <p class="p-sub" style="margin-top:8px">Ingen av ingredienserna finns i skafferiet än. Lägg till dem under Ingredienser så kan appen räkna ut om receptet går att laga.</p>
+    <div class="cook-list"></div>
+  </details>
+  <p class="cook-empty" id="cookEmpty" hidden></p>
+</main>
+
 <article class="recipe-page gutter" id="recipeView" hidden>
   <nav class="rp-top">
     <button type="button" class="back" id="backBtn">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 6-6 6 6 6"/></svg>
-      Kategorier
+      <span id="backLabel">Kategorier</span>
     </button>
     <span class="rp-crumbs" id="rpCrumbs"></span>
   </nav>
@@ -408,6 +488,7 @@
   </div>
   <section class="rp-section">
     <h3 class="rp-label" id="rpIngLabel">Ingredienser</h3>
+    <p class="rp-have" id="rpHave" hidden></p>
     <div id="rpIng"></div>
   </section>
   <section class="rp-section">
@@ -546,7 +627,6 @@
   let editing = false;
   let form = null;               // { mode, id, type, parentPick, image: {blob, url} | null, removeImage }
   let currentRecipe = null;      // id för receptet som visas
-  let listScroll = 0;
 
   const $ = (s) => document.querySelector(s);
   let baseTitle = document.title;
@@ -855,7 +935,7 @@
     };
   }
 
-  const APP_VERSION = "0.4.0";   // ska vara samma som VERSION i server.py
+  const APP_VERSION = "0.5.0";   // ska vara samma som VERSION i server.py
   let serverVersion = null;
 
   async function detectBackend() {
@@ -938,37 +1018,53 @@
       if (q.value.trim()) search();
       fillDatalists();
       route();
+      if (currentView === "cook") renderCook();
     } catch (e) {
       treeEl.innerHTML = `<li class="loading" style="border:0;box-shadow:none;background:none">Kunde inte ladda: ${esc(e.message)}</li>`;
     }
   }
 
-  // ---------- navigering: listan eller ett recept (#recept-12)
+  // ---------- navigering: Kategorier, Ingredienser (#ingredienser), Laga (#laga), recept (#recept-12)
   let cameFromList = false;     // true = bakåt-knappen kan använda webbläsarens historik
+  let returnView = "cats";      // vyn man kom till receptet ifrån
+  const VIEW_HASH = { cats: "", pantry: "ingredienser", cook: "laga" };
+  const VIEW_LABEL = { cats: "Kategorier", pantry: "Ingredienser", cook: "Laga" };
   function hashRecipeId() {
     const m = location.hash.match(/^#recept-(\d+)$/);
     return m ? Number(m[1]) : null;
   }
   function openRecipe(id) {
     if (hashRecipeId() === id) return route();
-    if (currentRecipe === null) { listScroll = window.scrollY; cameFromList = true; }
+    if (currentRecipe === null) { cameFromList = true; returnView = currentView; }
     location.hash = "recept-" + id;
   }
   function goToList() {
     if (cameFromList) { cameFromList = false; history.back(); }
-    else { history.replaceState(null, "", location.pathname + location.search); route(); }
+    else {
+      const h = VIEW_HASH[returnView];
+      history.replaceState(null, "", location.pathname + location.search + (h ? "#" + h : ""));
+      route();
+    }
+  }
+  function goTab(view) {
+    const h = VIEW_HASH[view];
+    if (h) { if (location.hash !== "#" + h) location.hash = h; else route(); }
+    else if (location.hash) { history.pushState(null, "", location.pathname + location.search); route(); }
   }
   let currentView = "cats";
-  let catsScroll = 0;
+  const viewScroll = { cats: 0, pantry: 0, cook: 0 };
   function showView(view) {
-    if (currentView === "cats" && view !== "cats") catsScroll = window.scrollY;
+    if (currentView !== "recipe") viewScroll[currentView] = window.scrollY;
     $("#listView").hidden = view !== "cats";
     $("#pantryView").hidden = view !== "pantry";
+    $("#cookView").hidden = view !== "cook";
     $("#recipeView").hidden = view !== "recipe";
-    $("#addBtn").hidden = view === "recipe";
+    $("#addBtn").hidden = view === "recipe" || view === "cook";
     $("#addBtn").setAttribute("aria-label", view === "pantry" ? "Lägg till ingrediens" : "Lägg till");
-    $("#tabCats").setAttribute("aria-selected", String(view !== "pantry"));
-    $("#tabPantry").setAttribute("aria-selected", String(view === "pantry"));
+    const tab = view === "recipe" ? returnView : view;
+    $("#tabCats").setAttribute("aria-selected", String(tab === "cats"));
+    $("#tabPantry").setAttribute("aria-selected", String(tab === "pantry"));
+    $("#tabCook").setAttribute("aria-selected", String(tab === "cook"));
     const changed = currentView !== view;
     currentView = view;
     return changed;
@@ -979,33 +1075,29 @@
     if (n && n.type === "recipe") {
       const changed = currentRecipe !== id;
       currentRecipe = id;
+      $("#backLabel").textContent = VIEW_LABEL[returnView];
       renderRecipe(n);
       showView("recipe");
       if (changed) window.scrollTo(0, 0);
       return;
     }
     if (id != null && nodes.length) history.replaceState(null, "", location.pathname + location.search);
-    const wasRecipe = currentRecipe !== null;
     currentRecipe = null;
     cameFromList = false;
-    if (location.hash === "#ingredienser") {
-      document.title = `Ingredienser – ${baseTitle}`;
-      if (showView("pantry")) { window.scrollTo(0, 0); loadPantry(); }
-    } else {
-      document.title = baseTitle;
-      const wasPantry = currentView === "pantry";
-      showView("cats");
-      if (wasRecipe) window.scrollTo(0, listScroll);
-      else if (wasPantry) window.scrollTo(0, catsScroll);
+    const view = location.hash === "#ingredienser" ? "pantry" : location.hash === "#laga" ? "cook" : "cats";
+    returnView = view;
+    document.title = view === "cats" ? baseTitle : `${VIEW_LABEL[view]} – ${baseTitle}`;
+    if (view === "cook") renderCook();
+    if (showView(view)) {
+      window.scrollTo(0, viewScroll[view] || 0);
+      if (view !== "cats") loadPantry();   // hämta senaste antal (kan ha ändrats på en annan telefon)
     }
   }
   window.addEventListener("hashchange", route);
   $("#backBtn").addEventListener("click", goToList);
-  $("#tabCats").addEventListener("click", () => {
-    if (currentView === "recipe") goToList();
-    else if (currentView === "pantry") { history.pushState(null, "", location.pathname + location.search); route(); }
-  });
-  $("#tabPantry").addEventListener("click", () => { if (currentView !== "pantry") location.hash = "ingredienser"; });
+  $("#tabCats").addEventListener("click", () => goTab("cats"));
+  $("#tabPantry").addEventListener("click", () => goTab("pantry"));
+  $("#tabCook").addEventListener("click", () => goTab("cook"));
 
   // ---------- receptsidan
   function paragraphs(text) {
@@ -1030,12 +1122,35 @@
     }
 
     const ing = n.ingredients || [];
+    const st = pantryLoaded && ing.length ? recipeStatus(n) : null;
     $("#rpIngLabel").innerHTML = `Ingredienser${ing.length ? ` <span>${ing.length} st</span>` : ""}`;
+    const mark = (i) => {
+      if (!st) return "";
+      const row = st.rows[i];
+      if (row.state === "have") return '<span class="dot" title="Finns hemma"></span>';
+      if (row.state === "missing") return '<span class="tag miss">Saknas</span>';
+      return "";
+    };
     $("#rpIng").innerHTML = ing.length
-      ? `<div class="ing-card"><table class="ing-table"><tbody>${ing.map((r) => `<tr>
-          <td class="amt">${esc(r.amount)}</td><td class="unit">${esc(r.unit)}</td><td class="what">${esc(r.name)}</td></tr>`).join("")}
+      ? `<div class="ing-card"><table class="ing-table"><tbody>${ing.map((r, i) => `<tr${st && st.rows[i].state === "missing" ? ' class="miss"' : ""}>
+          <td class="amt">${esc(r.amount)}</td><td class="unit">${esc(r.unit)}</td><td class="what">${esc(r.name)}</td><td class="st">${mark(i)}</td></tr>`).join("")}
          </tbody></table></div>`
       : '<p class="blank">Inga ingredienser inlagda än.</p>';
+    const have = $("#rpHave");
+    have.hidden = !st;
+    if (st) {
+      const unk = st.unknown.length ? ` · ${st.unknown.length} finns inte i skafferiet` : "";
+      if (st.missing.length) {
+        have.className = "rp-have";
+        have.innerHTML = `<span>Saknas hemma:</span>${st.missing.map((x) => `<span class="tag miss">${esc(x.name)}</span>`).join("")}<span class="cc-path">${unk}</span>`;
+      } else if (st.vital.length || !st.unknown.length) {
+        have.className = "rp-have ok";
+        have.innerHTML = `<span class="dot"></span> Allt som behövs finns hemma<span class="cc-path" style="font-weight:400">${unk}</span>`;
+      } else {
+        have.className = "rp-have muted";
+        have.textContent = "Ingredienserna finns inte i skafferiet än, så appen vet inte om de finns hemma.";
+      }
+    }
 
     $("#rpText").innerHTML = n.instructions ? paragraphs(n.instructions) : '<p class="blank">Ingen beskrivning inlagd än.</p>';
   }
@@ -1508,6 +1623,8 @@
     }
     renderPantry();
     fillDatalists();
+    if (currentView === "cook") renderCook();
+    if (currentView === "recipe" && byId.get(currentRecipe)) renderRecipe(byId.get(currentRecipe));
   }
 
   function fillDatalists() {
@@ -1624,7 +1741,7 @@
   });
 
   document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "visible" && currentView === "pantry" && ![...pPending.values()].some(Boolean)) loadPantry();
+    if (document.visibilityState === "visible" && currentView !== "cats" && ![...pPending.values()].some(Boolean)) loadPantry();
   });
 
   // formuläret
@@ -1679,7 +1796,7 @@
         $("#pName").focus();
       } else {
         pDlg.close();
-        flashPantry(saved.id);
+        if (currentView === "pantry") flashPantry(saved.id);
       }
     } catch (err) {
       $("#pErr").textContent = err.message;
@@ -1703,6 +1820,135 @@
         toast(`"${x.name}" är borttagen`);
       } catch (err) { toast(err.message); }
     });
+  });
+
+  // ---------- matchning recept <-> skafferi
+  // Receptraderna har bara text, så de matchas mot skafferiet på namn:
+  //  1. små bokstäver, bort med (parentes), allt efter komma, siffror och tecken
+  //  2. enkel böjning bort från varje ord: "gula lökar" -> "gul lök", "tomater" -> "tomat"
+  //  3. exakt lika, annars det längsta skafferinamnet som finns som hela ord i raden
+  //     ("finhackad gul lök" -> "Gul lök", "kycklingfilé i bitar" -> "Kycklingfilé")
+  const SUFFIXES = ["arna", "erna", "orna", "ar", "er", "or", "na", "en", "et", "a", "e"];
+  function stemWord(w) {
+    for (const suf of SUFFIXES) if (w.length - suf.length >= 3 && w.endsWith(suf)) return w.slice(0, -suf.length);
+    return w;
+  }
+  function matchKey(name) {
+    return String(name).toLocaleLowerCase("sv").replace(/\([^)]*\)/g, " ").split(",")[0]
+      .replace(/[^a-zåäöéèüæøë\s]/g, " ").split(/\s+/).filter(Boolean).map(stemWord).join(" ");
+  }
+  let pantryKeys = null;      // byggs om när skafferiet ändras
+  let pantryKeysFor = null;
+  function pantryIndex() {
+    if (pantryKeysFor !== pantry) {
+      pantryKeys = pantry.map((x) => ({ key: matchKey(x.name), item: x })).filter((k) => k.key);
+      pantryKeysFor = pantry;
+    }
+    return pantryKeys;
+  }
+  function matchPantry(name) {
+    const key = matchKey(name);
+    if (!key) return null;
+    const idx = pantryIndex();
+    const exact = idx.find((k) => k.key === key);
+    if (exact) return exact.item;
+    const padded = ` ${key} `;
+    let best = null;
+    for (const k of idx) if (padded.includes(` ${k.key} `) && (!best || k.key.length > best.key.length)) best = k;
+    return best ? best.item : null;
+  }
+  function recipeStatus(r) {
+    const rows = (r.ingredients || []).map((ing) => {
+      const item = matchPantry(ing.name);
+      const state = !item ? "unknown" : item.kind === "static" ? "static" : item.quantity > 0 ? "have" : "missing";
+      return { ing, item, state };
+    });
+    const seen = new Set();
+    const vital = [];
+    for (const row of rows) {
+      if (row.item && row.item.kind === "vital" && !seen.has(row.item.id)) { seen.add(row.item.id); vital.push(row.item); }
+    }
+    return {
+      rows,
+      vital,
+      missing: vital.filter((x) => x.quantity <= 0),
+      unknown: rows.filter((row) => row.state === "unknown").map((row) => row.ing),
+    };
+  }
+  const cleanIngName = (name) => {
+    const t = String(name).replace(/\([^)]*\)/g, " ").split(",")[0].replace(/\s+/g, " ").trim();
+    return t ? t[0].toLocaleUpperCase("sv") + t.slice(1) : t;
+  };
+
+  // ---------- Laga: vad kan jag laga?
+  const cookCat = $("#cookCat");
+  function fillCookCats() {
+    const keep = cookCat.value;
+    cookCat.innerHTML = '<option value="">Alla kategorier</option>' + children(null)
+      .filter((c) => c.type === "category" && recipeCount(c.id) > 0)
+      .map((c) => `<option value="${c.id}">${esc(c.name)}</option>`).join("");
+    cookCat.value = [...cookCat.options].some((o) => o.value === keep) ? keep : "";
+  }
+  function cookCard(r, st) {
+    const path = pathOf(r.id).slice(0, -1).map((x) => esc(x.name)).join(" › ");
+    const thumb = r.image_url
+      ? `<div class="cc-thumb" style="background-image:url('${esc(r.image_url)}')"></div>`
+      : `<div class="cc-thumb">${ICONS.plate}</div>`;
+    const tags = [...st.missing.map((x) => `<span class="tag miss">${esc(x.name)}</span>`),
+      ...st.vital.filter((x) => x.quantity > 0).map((x) => `<span class="tag have">${esc(x.name)}</span>`)].join("");
+    const unk = st.unknown.length ? `<div class="cc-unk"><span>Inte i skafferiet:</span>${st.unknown.map((ing, i) =>
+      `<button type="button" class="linkbtn" data-add="${esc(cleanIngName(ing.name))}" title="Lägg till i skafferiet">${esc(cleanIngName(ing.name))}</button>${i < st.unknown.length - 1 ? "<span>·</span>" : ""}`).join("")}</div>` : "";
+    return `<div class="cc" data-recipe="${r.id}">${thumb}<div class="cc-body">
+      <button type="button" class="cc-open">${esc(r.name)}</button>
+      ${path ? `<div class="cc-path">${path}</div>` : ""}
+      ${tags ? `<div class="cc-ings">${tags}</div>` : ""}${unk}</div></div>`;
+  }
+  function renderCook() {
+    fillCookCats();
+    const catId = cookCat.value ? Number(cookCat.value) : null;
+    let recipes = nodes.filter((n) => n.type === "recipe" && (catId === null || pathOf(n.id)[0].id === catId));
+    const noIng = recipes.filter((r) => !(r.ingredients || []).length).length;
+    recipes = recipes.filter((r) => (r.ingredients || []).length).sort((a, b) => coll.compare(a.name, b.name));
+    const groups = { ready: [], one: [], more: [], setup: [] };
+    for (const r of recipes) {
+      const st = recipeStatus(r);
+      const g = st.missing.length === 0 ? (st.vital.length || !st.unknown.length ? "ready" : "setup")
+        : st.missing.length === 1 ? "one" : "more";
+      groups[g].push([r, st]);
+    }
+    groups.more.sort((a, b) => a[1].missing.length - b[1].missing.length);
+    const fill = (sel, list) => {
+      const sec = $(sel);
+      sec.hidden = !list.length;
+      sec.querySelector(".p-head span").textContent = list.length ? `${list.length} st` : "";
+      sec.querySelector(".cook-list").innerHTML = list.map(([r, st]) => cookCard(r, st)).join("");
+    };
+    fill("#cookReady", groups.ready);
+    fill("#cookOne", groups.one);
+    fill("#cookMore", groups.more);
+    fill("#cookSetup", groups.setup);
+
+    const total = recipes.length;
+    const ready = groups.ready.length;
+    $("#cookSum").textContent = !pantryLoaded ? "Hämtar skafferiet…"
+      : !total ? ""
+      : ready ? `${ready} av ${total} recept kan lagas med det du har hemma.`
+      : `Inget recept kan lagas fullt ut just nu.${groups.one.length ? " Kolla de som saknar en sak." : ""}`;
+    const empty = $("#cookEmpty");
+    empty.hidden = !!total;
+    if (!total) {
+      empty.textContent = noIng ? `${noIng} recept saknar ingredienser. Lägg in ingredienserna i recepten, så visas de här.`
+        : catId !== null ? "Inga recept i den här kategorin än." : "Inga recept än. Lägg till ett under Kategorier med +.";
+    } else if (noIng) {
+      $("#cookSum").textContent += ` ${noIng} recept utan ingredienser visas inte.`;
+    }
+  }
+  cookCat.addEventListener("change", renderCook);
+  $("#cookView").addEventListener("click", (e) => {
+    const add = e.target.closest("[data-add]");
+    if (add) return openPantryForm("create", null, add.dataset.add);
+    const card = e.target.closest("[data-recipe]");
+    if (card) openRecipe(Number(card.dataset.recipe));
   });
 
   detectBackend().then((env) => {
